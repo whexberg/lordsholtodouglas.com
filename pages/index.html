@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+    <header>
+        <h1>Digital Store</h1>
+    </header>
+
+    <main>
+        <form id="payment-form">
+            <section class="form-section">
+                <h2>Select Product</h2>
+                <div class="product-options">
+                    <label class="product-option">
+                        <input type="radio" name="product" value="basic" data-price="999" checked />
+                        <span class="option-content">
+                            <span class="option-name">Basic Package</span>
+                            <span class="option-price">$9.99</span>
+                        </span>
+                    </label>
+                    <label class="product-option">
+                        <input type="radio" name="product" value="premium" data-price="2999" />
+                        <span class="option-content">
+                            <span class="option-name">Premium Package</span>
+                            <span class="option-price">$29.99</span>
+                        </span>
+                    </label>
+                    <label class="product-option">
+                        <input type="radio" name="product" value="ultimate" data-price="4999" />
+                        <span class="option-content">
+                            <span class="option-name">Ultimate Package</span>
+                            <span class="option-price">$49.99</span>
+                        </span>
+                    </label>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h2>Your Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required value="Bob Loblaw" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required value="test@example.com" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h2>Payment</h2>
+
+                <div class="form-row top-row">
+                    <div id="card-number" class="field card-number"></div>
+                    <div class="input-errors" id="card-number-errors" role="alert"></div>
+                </div>
+
+                <div class="form-row">
+                    <div id="card-date" class="field third-width"></div>
+                    <div class="input-errors" id="card-date-errors" role="alert"></div>
+                </div>
+
+                <div class="form-row">
+                    <div id="card-cvv" class="field third-width"></div>
+                    <div class="input-errors" id="card-cvv-errors" role="alert"></div>
+                </div>
+
+                <div class="form-row">
+                    <div id="card-postal-code" class="field third-width"></div>
+                    <div class="input-errors" id="card-postal-code-errors" role="alert"></div>
+                </div>
+
+                <div id="card-response" role="alert"></div>
+            </section>
+
+            <div class="checkout-summary">
+                <div class="total">
+                    <span>Total:</span>
+                    <span id="total-amount">$9.99</span>
+                </div>
+                <button type="submit" id="submit-btn">
+                    <span id="btn-text">Pay Now</span>
+                    <span id="btn-loading" class="hidden">Processing...</span>
+                </button>
+            </div>
+        </form>
+
+        <div id="success-message" class="hidden">
+            <h2>Payment Successful!</h2>
+            <p>
+                Thank you for your purchase. Check your email for download
+                instructions.
+            </p>
+        </div>
+    </main>
+
+    <script src="https://checkout.sandbox.dev.clover.com/sdk.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

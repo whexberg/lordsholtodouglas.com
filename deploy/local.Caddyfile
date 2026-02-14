@@ -1,0 +1,24 @@
+{
+	admin off
+	local_certs
+}
+
+localhost {
+	reverse_proxy app:8080 {
+		health_uri /
+		health_interval 10s
+	}
+
+	encode gzip zstd
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

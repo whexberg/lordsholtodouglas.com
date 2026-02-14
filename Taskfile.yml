@@ -1,0 +1,144 @@
+version: '3'
+
+vars:
+  BINARY: server
+  DOCKER_IMAGE: lsd3
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  # Development
+  dev:
+    desc: Run with hot reload (air)
+    cmds:
+      - air
+    env:
+      PORT: 8080
+
+  run:
+    desc: Run the application locally
+    cmds:
+      - go run ./cmd/server
+    env:
+      PORT: 8080
+
+  build:
+    desc: Build the binary
+    cmds:
+      - mkdir -p build
+      - go build -o build/{{.BINARY}} ./cmd/server
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -rf build/
+      - rm -rf tmp/
+      - go clean
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  test:cover:
+    desc: Run tests with coverage
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+
+  lint:
+    desc: Run linter
+    cmds:
+      - golangci-lint run
+
+  fmt:
+    desc: Format code
+    cmds:
+      - go fmt ./...
+
+  tidy:
+    desc: Tidy go modules
+    cmds:
+      - go mod tidy
+
+  # Docker
+  docker:build:
+    desc: Build Docker image
+    cmds:
+      - docker build -t {{.DOCKER_IMAGE}} .
+
+  docker:up:
+    desc: Start local Docker environment
+    dir: deploy
+    cmds:
+      - docker compose up --build -d
+
+  docker:down:
+    desc: Stop local Docker environment
+    dir: deploy
+    cmds:
+      - docker compose down
+
+  docker:logs:
+    desc: View local Docker logs
+    dir: deploy
+    cmds:
+      - docker compose logs -f
+
+  docker:restart:
+    desc: Restart local Docker environment
+    cmds:
+      - task: docker:down
+      - task: docker:up
+
+  # Production
+  prod:up:
+    desc: Start production Docker environment
+    dir: deploy
+    cmds:
+      - docker compose -f docker-compose.prod.yml up --build -d
+
+  prod:down:
+    desc: Stop production Docker environment
+    dir: deploy
+    cmds:
+      - docker compose -f docker-compose.prod.yml down
+
+  prod:logs:
+    desc: View production Docker logs
+    dir: deploy
+    cmds:
+      - docker compose -f docker-compose.prod.yml logs -f
+
+  prod:restart:
+    desc: Restart production Docker environment
+    cmds:
+      - task: prod:down
+      - task: prod:up
+
+  # Setup
+  setup:
+    desc: Initial project setup
+    cmds:
+      - cp -n .env.example .env || true
+      - go mod download
+      - echo "Setup complete. Edit .env with your Clover credentials."
+
+  # Utilities
+  env:check:
+    desc: Check required environment variables
+    cmds:
+      - |
+        missing=""
+        [ -z "$CLOVER_BASE_URL" ] && missing="$missing CLOVER_BASE_URL"
+        [ -z "$CLOVER_MERCHANT_ID" ] && missing="$missing CLOVER_MERCHANT_ID"
+        [ -z "$CLOVER_PUBLIC_API_TOKEN" ] && missing="$missing CLOVER_PUBLIC_API_TOKEN"
+        [ -z "$CLOVER_PRIVATE_API_TOKEN" ] && missing="$missing CLOVER_PRIVATE_API_TOKEN"
+        if [ -n "$missing" ]; then
+          echo "Missing required env vars:$missing"
+          exit 1
+        fi
+        echo "All required environment variables are set"
