@@ -1,0 +1,40 @@
+{{define "title"}}Shop — Lord Sholto Douglas #3{{end}}
+
+{{define "content"}}
+<section class="w-full px-4 py-12 md:px-16">
+    <div class="mx-auto max-w-4xl">
+        <h1 class="font-serif text-4xl md:text-5xl font-bold tracking-wide uppercase text-center mb-10 border-b-2 border-foreground/10 pb-4">
+            Shop
+        </h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {{if .Products}}
+                {{range .Products}}
+                <div class="border-2 border-foreground/20 bg-card p-6 shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-display text-xl uppercase tracking-wide mb-2">{{.Name}}</h3>
+                        {{if .Description}}<p class="text-foreground/80 text-sm mb-3">{{.Description}}</p>{{end}}
+                        <p class="text-2xl font-bold text-primary mb-2">${{printf "%.2f" .Price}}</p>
+                        {{if .LowStock}}
+                        <p class="text-sm text-destructive font-medium mb-2">Only {{.StockCount}} left</p>
+                        {{end}}
+                    </div>
+                    {{if .Available}}
+                    <form method="POST" action="/cart/add">
+                        <input type="hidden" name="product_id" value="{{.ID}}">
+                        <button type="submit" class="w-full py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-background hover:text-primary transition-all duration-300 text-sm">
+                            Add to Cart
+                        </button>
+                    </form>
+                    {{else}}
+                    <button class="w-full py-3 bg-muted text-muted-foreground font-display uppercase tracking-widest text-sm cursor-not-allowed" disabled>Unavailable</button>
+                    {{end}}
+                </div>
+                {{end}}
+            {{else}}
+                <p class="text-muted-foreground py-6 col-span-full text-center">No products available at this time.</p>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}

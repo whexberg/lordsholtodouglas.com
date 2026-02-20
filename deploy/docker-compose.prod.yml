@@ -4,16 +4,16 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     restart: always
+    env_file:
+      - ../.env
     environment:
       - PORT=8080
-      - CLOVER_API_KEY=${CLOVER_API_KEY}
-      - CLOVER_MERCHANT_ID=${CLOVER_MERCHANT_ID}
-      - CLOVER_ENVIRONMENT=${CLOVER_ENVIRONMENT:-production}
-      - CLOVER_WEBHOOK_SECRET=${CLOVER_WEBHOOK_SECRET}
+    volumes:
+      - app_data:/app/data
     networks:
       - internal
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -31,11 +31,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      - DOMAIN=${DOMAIN}
-      - ACME_EMAIL=${ACME_EMAIL}
     volumes:
-      - ./prod.Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
@@ -54,5 +51,6 @@ networks:
   internal:
 
 volumes:
+  app_data:
   caddy_data:
   caddy_config:

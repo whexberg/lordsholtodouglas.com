@@ -3,6 +3,7 @@ version: '3'
 vars:
   BINARY: server
   DOCKER_IMAGE: lsd3
+  TAILWIND_VERSION: v4.1.8
 
 tasks:
   default:
@@ -10,16 +11,42 @@ tasks:
     cmds:
       - task --list
 
+  # Tailwind CSS
+  tailwind:install:
+    desc: Download Tailwind CSS standalone CLI
+    cmds:
+      - mkdir -p bin
+      - curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/{{.TAILWIND_VERSION}}/tailwindcss-linux-x64
+      - chmod +x tailwindcss-linux-x64
+      - mv tailwindcss-linux-x64 bin/tailwindcss
+    status:
+      - test -x bin/tailwindcss
+
+  css:build:
+    desc: Build CSS with Tailwind
+    deps: [tailwind:install]
+    cmds:
+      - ./bin/tailwindcss -i static/input.css -o static/style.css --minify
+
+  css:watch:
+    desc: Watch and rebuild CSS with Tailwind
+    deps: [tailwind:install]
+    cmds:
+      - ./bin/tailwindcss -i static/input.css -o static/style.css --watch
+
   # Development
   dev:
-    desc: Run with hot reload (air)
+    desc: Run with hot reload (air + tailwind watch)
+    deps: [tailwind:install]
     cmds:
+      - ./bin/tailwindcss -i static/input.css -o static/style.css --watch &
       - air
     env:
       PORT: 8080
 
   run:
     desc: Run the application locally
+    deps: [css:build]
     cmds:
       - go run ./cmd/server
     env:
@@ -27,15 +54,24 @@ tasks:
 
   build:
     desc: Build the binary
+    deps: [css:build]
     cmds:
       - mkdir -p build
       - go build -o build/{{.BINARY}} ./cmd/server
+
+  db:reset:
+    desc: Reset the SQLite cart database (handles root-owned files from Docker)
+    cmds:
+      - sudo rm -rf data
+      - mkdir -p data
 
   clean:
     desc: Remove build artifacts
     cmds:
       - rm -rf build/
       - rm -rf tmp/
+      - rm -rf bin/
+      - rm -f static/style.css
       - go clean
 
   test:
@@ -64,37 +100,38 @@ tasks:
     cmds:
       - go mod tidy
 
-  # Docker
-  docker:build:
-    desc: Build Docker image
-    cmds:
-      - docker build -t {{.DOCKER_IMAGE}} .
-
+  # Docker (dev) — hot reload with Caddy
   docker:up:
-    desc: Start local Docker environment
+    desc: Start dev Docker environment (hot reload + Caddy)
+    dir: deploy
+    cmds:
+      - docker compose up --build
+
+  docker:up:detach:
+    desc: Start dev Docker environment in background
     dir: deploy
     cmds:
       - docker compose up --build -d
 
   docker:down:
-    desc: Stop local Docker environment
+    desc: Stop dev Docker environment
     dir: deploy
     cmds:
       - docker compose down
 
   docker:logs:
-    desc: View local Docker logs
+    desc: View dev Docker logs
     dir: deploy
     cmds:
       - docker compose logs -f
 
   docker:restart:
-    desc: Restart local Docker environment
+    desc: Restart dev Docker environment
     cmds:
       - task: docker:down
-      - task: docker:up
+      - task: docker:up:detach
 
-  # Production
+  # Docker (prod) — compiled binary with Caddy + TLS
   prod:up:
     desc: Start production Docker environment
     dir: deploy
@@ -125,6 +162,8 @@ tasks:
     cmds:
       - cp -n .env.example .env || true
       - go mod download
+      - task tailwind:install
+      - task css:build
       - echo "Setup complete. Edit .env with your Clover credentials."
 
   # Utilities

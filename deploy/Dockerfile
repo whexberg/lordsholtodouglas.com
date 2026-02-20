@@ -1,15 +1,20 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates curl
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server .
+# Download Tailwind CLI and build CSS
+RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.8/tailwindcss-linux-x64-musl \
+    && chmod +x tailwindcss-linux-x64-musl \
+    && ./tailwindcss-linux-x64-musl -i static/input.css -o static/style.css --minify
+
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server ./cmd/server
 
 FROM alpine:3.20
 
@@ -20,7 +25,8 @@ RUN adduser -D -g '' appuser
 
 COPY --from=builder /app/server .
 COPY --from=builder /app/static ./static
-COPY --from=builder /app/pages ./pages
+COPY --from=builder /app/templates ./templates
+RUN mkdir -p data && chown appuser:appuser data
 
 USER appuser
 

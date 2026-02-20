@@ -40,7 +40,21 @@ caddy_config/
 *.log
 logs/
 
+# SQLite data
+data/
+
 # Air (hot reload)
 tmp/
 # Built binary
 server
+
+# Tailwind CLI binary
+bin/
+
+# Generated CSS (built from static/input.css)
+static/style.css
+
+# Images (deploy separately — too large for git)
+static/images/
+
+.claude/
