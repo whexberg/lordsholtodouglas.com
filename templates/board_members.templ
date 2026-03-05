@@ -1,0 +1,27 @@
+package templates
+
+import "lsd3/internal/data_view"
+
+templ BoardMembers(d data_view.BoardMemberPageData) {
+	@Base(data_view.PageData{
+		Title: d.Title,
+	}) {
+		<div class="mx-auto mb-10 text-center px-4">
+			<h1 class="font-serif text-4xl font-bold tracking-wide drop-shadow-lg md:text-6xl">{ d.Title }</h1>
+			<h3 class="font-display mx-auto mt-4 max-w-2xl text-lg font-medium md:text-2xl">{ d.Subtitle } </h3>
+		</div>
+		<div class="flex flex-col gap-4 px-4">
+			<div class="mx-auto grid max-w-4xl grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3">
+				for _, m := range d.Members {
+					<div class="border-primary flex h-full w-full flex-col border p-4">
+						<img src={ m.Image } alt={ m.Name } class="aspect-square w-full object-cover"/>
+						<div class="bg-primary text-primary-foreground flex grow flex-col justify-center p-4 text-center">
+							<div class="font-display text-xl font-bold">{ m.Name }</div>
+							<div class="text-sm font-bold">{ m.Label }</div>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	}
+}

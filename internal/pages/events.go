@@ -3,17 +3,13 @@ package pages
 import (
 	"log"
 	"lsd3/internal/content"
+	"lsd3/internal/data_view"
+	"lsd3/templates"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 )
-
-type eventsData struct {
-	PageData
-	Featured    []eventView
-	MonthGroups []MonthGroup
-}
 
 func (h *PageHandler) Events(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
@@ -28,11 +24,12 @@ func (h *PageHandler) Events(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	allViews := expandAndSort(eligible, now, to)
+	allViews := data_view.ExpandAndSort(eligible, now, to)
 
 	// Separate featured from upcoming
-	var featured []eventView
-	var upcoming []eventView
+	var featured []data_view.EventView
+	var upcoming []data_view.EventView
+
 	for _, v := range allViews {
 		if v.Featured {
 			featured = append(featured, v)
@@ -41,20 +38,15 @@ func (h *PageHandler) Events(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := eventsData{
-		PageData:    pageDataFromRequest(r),
+	data := data_view.EventsPageData{
+		PageData:    data_view.PageDataFromRequest(r),
 		Featured:    featured,
-		MonthGroups: groupByMonth(upcoming),
+		MonthGroups: data_view.GroupByMonth(upcoming),
 	}
-	if err := h.renderer.Render(w, "events.html", data); err != nil {
+	if err := templates.EventsPage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render events: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-}
-
-type eventData struct {
-	PageData
-	Instance *content.EventInstance
 }
 
 func (h *PageHandler) Event(w http.ResponseWriter, r *http.Request) {
@@ -68,11 +60,11 @@ func (h *PageHandler) Event(w http.ResponseWriter, r *http.Request) {
 	dateStr := chi.URLParam(r, "date")
 	instance := content.ResolveInstance(event, dateStr)
 
-	data := eventData{
-		PageData: pageDataFromRequest(r),
+	data := data_view.EventDetailData{
+		PageData: data_view.PageDataFromRequest(r),
 		Instance: instance,
 	}
-	if err := h.renderer.Render(w, "event.html", data); err != nil {
+	if err := templates.EventPage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render event: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}

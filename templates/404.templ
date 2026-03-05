@@ -1,0 +1,22 @@
+package templates
+
+import "lsd3/internal/data_view"
+
+templ NotFound() {
+	@Base(data_view.PageData{Title: "404 - Page Not Found"}) {
+		<div class="flex h-full grow flex-col items-center justify-center space-y-4">
+			<h1 class="text-primary font-serif text-5xl font-semibold tracking-tight text-pretty sm:text-6xl">
+				Page not found
+			</h1>
+			<p class="text-pretty">
+				Sorry, we couldn't find the page you're looking for.
+			</p>
+			<img alt="404" src="/images/404.png" class="border-primary max-w-75 border p-4"/>
+			<div>
+				<a href="/" class="text-primary text-sm/7 font-semibold">
+					<span aria-hidden="true">&larr;</span> Back to home
+				</a>
+			</div>
+		</div>
+	}
+}

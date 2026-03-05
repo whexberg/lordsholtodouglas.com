@@ -3,17 +3,12 @@ package pages
 import (
 	"log"
 	"lsd3/internal/content"
+	"lsd3/internal/data_view"
+	"lsd3/templates"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
-
-type staticPageData struct {
-	PageData
-	Title       string
-	Description string
-	ContentHTML interface{}
-}
 
 func (h *PageHandler) StaticPage(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "*")
@@ -23,13 +18,14 @@ func (h *PageHandler) StaticPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := staticPageData{
-		PageData:    pageDataFromRequest(r),
-		Title:       page.Title,
+	pd := data_view.PageDataFromRequest(r)
+	pd.Title = page.Title
+	data := data_view.StaticPageData{
+		PageData:    pd,
 		Description: page.Description,
 		ContentHTML: page.ContentHTML,
 	}
-	if err := h.renderer.Render(w, "static-page.html", data); err != nil {
+	if err := templates.StaticPage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render static page %s: %v", slug, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}

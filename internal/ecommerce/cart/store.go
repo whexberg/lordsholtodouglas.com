@@ -36,13 +36,14 @@ func NewSQLiteStore(dbPath string) (*SQLiteStore, error) {
 	}
 
 	const schema = `CREATE TABLE IF NOT EXISTS cart_items (
-		session_id  TEXT NOT NULL,
-		product_id  TEXT NOT NULL,
-		name        TEXT NOT NULL,
-		price_cents INTEGER NOT NULL,
-		quantity    INTEGER NOT NULL,
-		updated_at  INTEGER NOT NULL DEFAULT 0,
-		stock_limit INTEGER NOT NULL DEFAULT -1,
+		session_id     TEXT NOT NULL,
+		product_id     TEXT NOT NULL,
+		name           TEXT NOT NULL,
+		price_cents    INTEGER NOT NULL,
+		quantity       INTEGER NOT NULL,
+		updated_at     INTEGER NOT NULL DEFAULT 0,
+		stock_limit    INTEGER NOT NULL DEFAULT -1,
+		variable_price INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY (session_id, product_id)
 	)`
 	if _, err := db.Exec(schema); err != nil {
@@ -54,6 +55,7 @@ func NewSQLiteStore(dbPath string) (*SQLiteStore, error) {
 	// DEFAULT must be a constant for ALTER TABLE ADD COLUMN in SQLite.
 	db.Exec("ALTER TABLE cart_items ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0")
 	db.Exec("ALTER TABLE cart_items ADD COLUMN stock_limit INTEGER NOT NULL DEFAULT -1")
+	db.Exec("ALTER TABLE cart_items ADD COLUMN variable_price INTEGER NOT NULL DEFAULT 0")
 
 	store := &SQLiteStore{db: db, done: make(chan struct{})}
 	go store.cleanupLoop()
@@ -68,7 +70,7 @@ func (s *SQLiteStore) Get(sessionID string) *Cart {
 	}
 
 	rows, err := s.db.Query(
-		"SELECT product_id, name, price_cents, quantity, stock_limit FROM cart_items WHERE session_id = ?",
+		"SELECT product_id, name, price_cents, quantity, stock_limit, variable_price FROM cart_items WHERE session_id = ?",
 		sessionID,
 	)
 	if err != nil {
@@ -79,7 +81,7 @@ func (s *SQLiteStore) Get(sessionID string) *Cart {
 
 	for rows.Next() {
 		var item CartItem
-		if err := rows.Scan(&item.ProductID, &item.Name, &item.PriceCents, &item.Quantity, &item.StockLimit); err != nil {
+		if err := rows.Scan(&item.ProductID, &item.Name, &item.PriceCents, &item.Quantity, &item.StockLimit, &item.VariablePrice); err != nil {
 			log.Printf("sqlite scan: %v", err)
 			continue
 		}
@@ -104,7 +106,7 @@ func (s *SQLiteStore) Save(sessionID string, c *Cart) error {
 
 	now := time.Now().Unix()
 	stmt, err := tx.Prepare(
-		"INSERT INTO cart_items (session_id, product_id, name, price_cents, quantity, updated_at, stock_limit) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO cart_items (session_id, product_id, name, price_cents, quantity, updated_at, stock_limit, variable_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 	)
 	if err != nil {
 		tx.Rollback()
@@ -113,7 +115,7 @@ func (s *SQLiteStore) Save(sessionID string, c *Cart) error {
 	defer stmt.Close()
 
 	for _, item := range c.Items {
-		if _, err := stmt.Exec(sessionID, item.ProductID, item.Name, item.PriceCents, item.Quantity, now, item.StockLimit); err != nil {
+		if _, err := stmt.Exec(sessionID, item.ProductID, item.Name, item.PriceCents, item.Quantity, now, item.StockLimit, item.VariablePrice); err != nil {
 			tx.Rollback()
 			return fmt.Errorf("insert %s: %w", item.ProductID, err)
 		}

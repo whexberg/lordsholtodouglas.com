@@ -24,6 +24,21 @@ From **Friday, April 17th through Sunday, April 19th**, Brothers shall gather at
 
 ---
 
+### Cost
+
+- **Red Shirt Prepay: $65**
+- **PBCs: $103** (prepay or at the door)
+
+<div class="text-center">
+<a 
+    href="/shop" 
+    class="inline-block mt-4 px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-background hover:text-primary transition-all duration-300 text-sm">
+Pay Now
+</a>
+</div>
+
+---
+
 ### What to Expect
 
 - **Camping under the stars** — Bring thy tent, thy bedroll, and thy spirit of adventure

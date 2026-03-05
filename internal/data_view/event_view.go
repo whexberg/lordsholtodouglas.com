@@ -1,4 +1,4 @@
-package pages
+package data_view
 
 import (
 	"lsd3/internal/content"
@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// eventView is a template-friendly projection of an Event occurrence with a URL.
-type eventView struct {
+// EventView is a template-friendly projection of an Event occurrence with a URL.
+type EventView struct {
 	Title       string
 	Slug        string
 	Description string
@@ -25,11 +25,11 @@ type eventView struct {
 // MonthGroup groups event views under a month header.
 type MonthGroup struct {
 	Label  string // e.g. "February 2026"
-	Events []eventView
+	Events []EventView
 }
 
-func occurrenceToView(occ content.EventOccurrence) eventView {
-	return eventView{
+func occurrenceToView(occ content.EventOccurrence) EventView {
+	return EventView{
 		Title:       occ.Event.Title,
 		Slug:        occ.Event.Slug,
 		Description: occ.Event.Description,
@@ -46,9 +46,9 @@ func occurrenceToView(occ content.EventOccurrence) eventView {
 }
 
 // expandAndSort returns sorted event views from occurrences within [from, to).
-func expandAndSort(events []content.Event, from, to time.Time) []eventView {
+func ExpandAndSort(events []content.Event, from, to time.Time) []EventView {
 	occs := content.ExpandOccurrences(events, from, to)
-	views := make([]eventView, len(occs))
+	views := make([]EventView, len(occs))
 	for i, occ := range occs {
 		views[i] = occurrenceToView(occ)
 	}
@@ -66,7 +66,7 @@ func expandAndSort(events []content.Event, from, to time.Time) []eventView {
 }
 
 // groupByMonth groups event views into monthly groups.
-func groupByMonth(views []eventView) []MonthGroup {
+func GroupByMonth(views []EventView) []MonthGroup {
 	var groups []MonthGroup
 	var current *MonthGroup
 

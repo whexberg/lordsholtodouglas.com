@@ -1,19 +1,6 @@
 package cart
 
-// CartItem represents an item in the shopping cart
-type CartItem struct {
-	ProductID  string  `json:"product_id"`
-	Name       string  `json:"name"`
-	Price      float64 `json:"price"`
-	PriceCents int64   `json:"price_cents"`
-	Quantity   int     `json:"quantity"`
-	StockLimit int     `json:"stock_limit"` // -1 = unlimited (not tracked)
-}
-
-// Subtotal returns the line item subtotal in dollars.
-func (ci *CartItem) Subtotal() float64 {
-	return float64(ci.PriceCents*int64(ci.Quantity)) / 100.0
-}
+import "lsd3/internal/ecommerce"
 
 // Cart represents a shopping cart
 type Cart struct {
@@ -35,25 +22,32 @@ func (c *Cart) TotalDollars() float64 {
 	return float64(c.Total()) / 100.0
 }
 
-// MaxItemQuantity is the maximum quantity allowed per cart item.
-const MaxItemQuantity = 99
-
-// maxQty returns the effective maximum quantity for an item,
-// considering both MaxItemQuantity and stock limits.
-func maxQty(stockLimit int) int {
-	if stockLimit >= 0 && stockLimit < MaxItemQuantity {
-		return stockLimit
-	}
-	return MaxItemQuantity
-}
-
 // AddItem adds an item to the cart or increments quantity if exists.
 // Quantity is capped at MaxItemQuantity and stock limit.
+// If the item already exists but the price differs (variable-price re-add),
+// the price is updated and quantity is set to 1 instead of incrementing.
 func (c *Cart) AddItem(item CartItem) {
-	cap := maxQty(item.StockLimit)
+	// Variable-price items are always qty 1.
+	if item.VariablePrice {
+		item.Quantity = 1
+	}
+	cap := ecommerce.MaxQty(item.StockLimit)
 	for i, existing := range c.Items {
 		if existing.ProductID == item.ProductID {
 			c.Items[i].StockLimit = item.StockLimit // refresh stock limit
+			if item.VariablePrice {
+				// Variable-price re-add: update price, keep qty 1.
+				c.Items[i].PriceCents = item.PriceCents
+				c.Items[i].Price = item.Price
+				c.Items[i].Quantity = 1
+				return
+			}
+			if existing.PriceCents != item.PriceCents {
+				c.Items[i].PriceCents = item.PriceCents
+				c.Items[i].Price = item.Price
+				c.Items[i].Quantity = 1
+				return
+			}
 			c.Items[i].Quantity += item.Quantity
 			if c.Items[i].Quantity > cap {
 				c.Items[i].Quantity = cap
@@ -86,7 +80,11 @@ func (c *Cart) UpdateQuantity(productID string, quantity int) {
 	}
 	for i, item := range c.Items {
 		if item.ProductID == productID {
-			cap := maxQty(item.StockLimit)
+			// Variable-price items are always qty 1.
+			if item.VariablePrice {
+				return
+			}
+			cap := ecommerce.MaxQty(item.StockLimit)
 			if quantity > cap {
 				quantity = cap
 			}
@@ -108,16 +106,4 @@ func (c *Cart) TotalItems() int {
 // Clear empties the cart
 func (c *Cart) Clear() {
 	c.Items = []CartItem{}
-}
-
-// ItemInfo holds authoritative item data from inventory.
-type ItemInfo struct {
-	Name       string
-	PriceCents int64
-	StockCount int  // -1 means unlimited (stock not tracked)
-}
-
-// ItemLookup fetches an item's authoritative data by ID.
-type ItemLookup interface {
-	LookupItem(itemID string) (*ItemInfo, error)
 }

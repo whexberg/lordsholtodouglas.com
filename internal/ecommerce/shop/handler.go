@@ -5,36 +5,20 @@ import (
 	"log"
 	"net/http"
 
-	"lsd3/internal/middleware"
-	"lsd3/internal/templates"
+	"lsd3/internal/data_view"
+	"lsd3/templates"
 
 	"github.com/go-chi/chi/v5"
 )
 
 // ShopHandler serves the shop page.
 type ShopHandler struct {
-	items    ItemLister
-	renderer templates.Renderer
+	items ItemLister
 }
 
 // NewShopHandler creates a new shop handler.
-func NewShopHandler(items ItemLister, r templates.Renderer) *ShopHandler {
-	return &ShopHandler{items: items, renderer: r}
-}
-
-// PageData holds common data passed to every page template.
-type PageData struct {
-	CartCount int
-}
-
-func pageDataFromRequest(r *http.Request) PageData {
-	count, _ := r.Context().Value(middleware.CartCountKey).(int)
-	return PageData{CartCount: count}
-}
-
-type shopData struct {
-	PageData
-	Products []Product
+func NewShopHandler(items ItemLister) *ShopHandler {
+	return &ShopHandler{items: items}
 }
 
 func (h *ShopHandler) Shop(w http.ResponseWriter, r *http.Request) {
@@ -46,12 +30,27 @@ func (h *ShopHandler) Shop(w http.ResponseWriter, r *http.Request) {
 
 	products := ProductsFromCloverItems(items)
 
-	data := shopData{
-		PageData: pageDataFromRequest(r),
-		Products: products,
+	views := make([]data_view.ProductView, len(products))
+	for i, p := range products {
+		views[i] = data_view.ProductView{
+			ID:            p.ID,
+			Name:          p.Name,
+			Price:         p.Price,
+			PriceCents:    p.PriceCents,
+			Available:     p.Available,
+			TrackStock:    p.TrackStock,
+			StockCount:    p.StockCount,
+			Description:   p.Description,
+			VariablePrice: p.VariablePrice,
+		}
 	}
 
-	if err := h.renderer.Render(w, "shop.html", data); err != nil {
+	data := data_view.ShopData{
+		PageData: data_view.PageDataFromRequest(r),
+		Products: views,
+	}
+
+	if err := templates.ShopPage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render shop: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}

@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"lsd3/internal/data_view"
 	"lsd3/internal/ecommerce/cart"
 	"lsd3/internal/ecommerce/clover"
 	"lsd3/internal/middleware"
-	"lsd3/internal/templates"
+	"lsd3/templates"
 	"net/http"
 	"strings"
 )
@@ -52,7 +53,7 @@ func (h *CheckoutHandler) GetConfig(w http.ResponseWriter, r *http.Request) {
 const maxCustomerFieldLen = 200
 const maxNoteLen = 500
 
-// ProcessingFeeCents is the flat processing fee added to every order.
+// ProcessingFeeCents is the processing fee displayed on checkout. Clover applies this automatically; it is not added as a line item.
 const ProcessingFeeCents = 100
 
 // ProcessCheckout handles POST /api/checkout
@@ -115,9 +116,7 @@ func (h *CheckoutHandler) ProcessCheckout(w http.ResponseWriter, r *http.Request
 		jsonError(w, "Invalid cart total", http.StatusBadRequest)
 		return
 	}
-	amount := cartTotal + ProcessingFeeCents
-
-	log.Printf("Processing checkout: amount_cents=%d (cart=%d + fee=%d) items=%d", amount, cartTotal, ProcessingFeeCents, len(c.Items))
+	log.Printf("Processing checkout: amount_cents=%d items=%d", cartTotal, len(c.Items))
 
 	// Create Clover order with line items referencing inventory.
 	orderReq := clover.CreateOrderRequest{
@@ -151,7 +150,20 @@ func (h *CheckoutHandler) ProcessCheckout(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		if cloverItem.PriceType == "PER_UNIT" {
+		if cloverItem.PriceType == "VARIABLE" {
+			// Variable-price items: use the cart's price (set by user).
+			lineItem := clover.OrderLineItem{
+				Item:    &clover.ItemRef{ID: item.ProductID},
+				Price:   item.PriceCents,
+				UnitQty: item.Quantity * 1000,
+			}
+			if _, err := h.orders.AddLineItemToOrder(o.ID, lineItem); err != nil {
+				log.Printf("Add line item error (order %s, item %s): %v", o.ID, item.ProductID, err)
+				h.cleanupOrder(o.ID)
+				jsonError(w, "Failed to add items to order", http.StatusInternalServerError)
+				return
+			}
+		} else if cloverItem.PriceType == "PER_UNIT" {
 			// Per-unit items support unitQty in a single call.
 			lineItem := clover.OrderLineItem{
 				Item:    &clover.ItemRef{ID: item.ProductID},
@@ -177,19 +189,6 @@ func (h *CheckoutHandler) ProcessCheckout(w http.ResponseWriter, r *http.Request
 				}
 			}
 		}
-	}
-
-	// Add processing fee as a non-inventory line item.
-	feeItem := clover.OrderLineItem{
-		Name:    "Processing Fee",
-		Price:   ProcessingFeeCents,
-		UnitQty: 1000, // qty=1 in Clover thousandths
-	}
-	if _, err := h.orders.AddLineItemToOrder(o.ID, feeItem); err != nil {
-		log.Printf("Add processing fee error (order %s): %v", o.ID, err)
-		h.cleanupOrder(o.ID)
-		jsonError(w, "Failed to add processing fee to order", http.StatusInternalServerError)
-		return
 	}
 
 	// Pay for the order — links payment to line items for itemized receipts.
@@ -271,43 +270,27 @@ func buildOrderNote(c CustomerInfo) string {
 // CheckoutPageHandler serves the checkout page with cart data.
 type CheckoutPageHandler struct {
 	store     *cart.SQLiteStore
-	renderer  templates.Renderer
 	cloverSDK string
 }
 
 // NewCheckoutPageHandler creates a new checkout page handler.
-func NewCheckoutPageHandler(store *cart.SQLiteStore, r templates.Renderer, cloverSDKURL string) *CheckoutPageHandler {
-	return &CheckoutPageHandler{store: store, renderer: r, cloverSDK: cloverSDKURL}
-}
-
-// PageData holds common data passed to every page template.
-type PageData struct {
-	CartCount int
-}
-
-type checkoutPageData struct {
-	PageData
-	Cart              *cart.Cart
-	CloverSDKURL      string
-	ProcessingFeeCents int
-	GrandTotalCents   int64
+func NewCheckoutPageHandler(store *cart.SQLiteStore, cloverSDKURL string) *CheckoutPageHandler {
+	return &CheckoutPageHandler{store: store, cloverSDK: cloverSDKURL}
 }
 
 func (h *CheckoutPageHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 	sessionID := r.Context().Value(middleware.SessionIDKey).(string)
 
-	count, _ := r.Context().Value(middleware.CartCountKey).(int)
-
 	c := h.store.Get(sessionID)
-	data := checkoutPageData{
-		PageData:           PageData{CartCount: count},
+	data := data_view.CheckoutData{
+		PageData:           data_view.PageDataFromRequest(r),
 		Cart:               c,
 		CloverSDKURL:       h.cloverSDK,
 		ProcessingFeeCents: ProcessingFeeCents,
 		GrandTotalCents:    c.Total() + int64(ProcessingFeeCents),
 	}
 
-	if err := h.renderer.Render(w, "checkout.html", data); err != nil {
+	if err := templates.CheckoutPage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render checkout: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}

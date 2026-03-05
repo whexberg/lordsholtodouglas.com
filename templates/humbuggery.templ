@@ -1,0 +1,26 @@
+package templates
+
+import "lsd3/internal/data_view"
+
+templ HumbuggeryPage(d data_view.HumbuggeryData) {
+	@Base(data_view.PageData{Title: "Hall of Humbuggery"}) {
+		<section class="w-full max-w-4xl mx-auto px-4">
+			<div class="text-center">
+				<h1 class="font-serif text-4xl font-bold drop-shadow-lg md:text-6xl">
+					Lord Sholto Douglas' Hall of Humbuggery
+				</h1>
+			</div>
+			<div class="flex flex-col gap-4">
+				<div class="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
+					<p>{ d.Intro }</p>
+				</div>
+				<img alt="Grand Banquet Placemat" class="border-accent w-full border p-4" src="/images/humbuggery/Grand+Banquet+Placemat+.jpg"/>
+				<div class="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-3">
+					for _, img := range d.Images {
+						<img alt="Humbug Portrait" class="border-accent aspect-square w-full border object-cover p-4" src={ "/images/humbuggery/" + img }/>
+					}
+				</div>
+			</div>
+		</section>
+	}
+}

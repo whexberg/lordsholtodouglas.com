@@ -44,7 +44,7 @@ All proceeds from this noble endeavor shall flow directly into the coffers suppo
 - **Should You Be Absent:** Fear not! We shall seek thee out and deliver the glad tidings post-haste!
 
 <div class="flex justify-center my-8">
-    <a href="https://link.clover.com/urlshortener/xskgp9"
+    <a href="/shop"
         class="inline-block px-8 py-4 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-primary-foreground hover:text-primary hover:border-primary transition-all duration-300 shadow-lg hover:shadow-xl">
         Acquire Thy Tickets Hence
     </a>

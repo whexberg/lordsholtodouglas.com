@@ -1,0 +1,29 @@
+package partials
+
+import "lsd3/internal/data_view"
+
+templ HomeEventCard(data data_view.EventView) {
+	<article class="border-2 border-foreground/20 bg-card p-6 shadow-md hover:shadow-xl transition-shadow duration-300">
+		<div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+			<h3 class="font-display text-2xl uppercase tracking-wide">
+				<a href={ data.URL } class="text-foreground hover:text-primary transition-colors">{ data.Title }</a>
+			</h3>
+			<p class="font-display text-sm uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+				{ data.Date }
+			</p>
+		</div>
+		<p class="text-foreground/80 leading-relaxed mb-4">{ data.Description }</p>
+		<div class="flex flex-wrap justify-between items-end gap-4">
+			if data.Location != "" {
+				<div class="space-y-1 font-display text-xs uppercase tracking-wider border-l-4 border-primary pl-4">
+					<p><strong class="text-primary">Location:</strong> { data.Location }</p>
+				</div>
+			}
+			<div>
+				<a href={ data.URL } class="font-display text-xs uppercase tracking-widest text-primary hover:text-primary/80 border-b-2 border-primary/0 hover:border-primary transition-all">
+					View event →
+				</a>
+			</div>
+		</div>
+	</article>
+}

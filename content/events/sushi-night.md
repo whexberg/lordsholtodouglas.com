@@ -32,7 +32,7 @@ On the evening of **Saturday, February 28th, in the year 6031** (2026), we shall
 - **The Toll:** A contribution of **$65** (prepay required)
 
 <div class="flex justify-center my-8">
-    <a href="https://link.clover.com/urlshortener/tGJDmp" target="_blank" rel="noopener noreferrer"
+    <a href="/shop"
         class="inline-block px-8 py-4 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-primary-foreground hover:text-primary hover:border-primary transition-all duration-300 shadow-lg hover:shadow-xl">
         Secure Thy Seat at the Feast
     </a>

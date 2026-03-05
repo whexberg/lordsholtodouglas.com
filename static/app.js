@@ -14,8 +14,12 @@ function openCart(prefetchedData) {
   }
 
   fetch("/api/cart", { headers: { Accept: "application/json" } })
-    .then(function (res) { return res.json(); })
-    .then(function (data) { renderCart(data); })
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (data) {
+      renderCart(data);
+    })
     .catch(function () {
       document.getElementById("cart-items").innerHTML =
         '<p class="text-destructive text-center py-8">Failed to load cart.</p>';
@@ -47,9 +51,9 @@ function renderCart(data) {
   if (!data.items || data.items.length === 0) {
     container.innerHTML =
       '<div class="text-center py-8">' +
-        '<p class="text-muted-foreground mb-4">Your cart is empty.</p>' +
-        '<a href="/shop" class="text-primary hover:underline">Browse the shop</a>' +
-      '</div>';
+      '<p class="text-muted-foreground mb-4">Your cart is empty.</p>' +
+      '<a href="/shop" class="text-primary hover:underline">Browse the shop</a>' +
+      "</div>";
     footer.classList.add("hidden");
     return;
   }
@@ -59,25 +63,75 @@ function renderCart(data) {
     var item = data.items[i];
     var subtotal = (item.subtotalCents / 100).toFixed(2);
     var unitPrice = (item.priceCents / 100).toFixed(2);
-    html +=
-      '<div class="flex items-start justify-between gap-3 pb-4 border-b border-foreground/10">' +
+    if (item.variablePrice) {
+      html +=
+        '<div class="flex items-start justify-between gap-3 pb-4 border-b border-foreground/10">' +
         '<div class="grow">' +
-          '<p class="font-serif font-bold text-sm">' + escapeHtml(item.name) + '</p>' +
-          '<p class="text-xs text-muted-foreground">$' + unitPrice + ' each</p>' +
-          (item.stockLimit >= 0 ? '<p class="text-xs text-destructive">' + item.stockLimit + ' available</p>' : '') +
-        '</div>' +
-        '<div class="flex items-center gap-1">' +
-          '<button data-cart-qty="' + escapeAttr(item.productId) + '" data-qty="' + (item.quantity - 1) + '" class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer">−</button>' +
-          '<span class="w-8 text-center text-sm">' + item.quantity + '</span>' +
-          '<button data-cart-qty="' + escapeAttr(item.productId) + '" data-qty="' + (item.quantity + 1) + '"' + (item.stockLimit >= 0 && item.quantity >= item.stockLimit ? ' disabled' : '') + ' class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">+</button>' +
-        '</div>' +
+        '<p class="font-serif font-bold text-sm">' +
+        escapeHtml(item.name) +
+        "</p>" +
+        '<div class="flex items-center gap-1 mt-1">' +
+        '<span class="text-sm font-bold text-primary">$</span>' +
+        '<input type="number" data-cart-price="' +
+        escapeAttr(item.productId) +
+        '" value="' +
+        unitPrice +
+        '" min="1" step="1" class="w-24 p-1 border border-border rounded text-sm bg-background text-foreground focus:outline-none focus:border-primary">' +
+        "</div>" +
+        "</div>" +
         '<div class="text-right min-w-[60px]">' +
-          '<p class="text-sm font-bold">$' + subtotal + '</p>' +
-          '<button data-cart-remove="' + escapeAttr(item.productId) + '" class="text-xs text-destructive hover:underline mt-1 cursor-pointer">Remove</button>' +
-        '</div>' +
-      '</div>';
+        '<button data-cart-remove="' +
+        escapeAttr(item.productId) +
+        '" class="text-xs text-destructive hover:underline mt-1 cursor-pointer">Remove</button>' +
+        "</div>" +
+        "</div>";
+    } else {
+      html +=
+        '<div class="flex items-start justify-between gap-3 pb-4 border-b border-foreground/10">' +
+        '<div class="grow">' +
+        '<p class="font-serif font-bold text-sm">' +
+        escapeHtml(item.name) +
+        "</p>" +
+        '<p class="text-xs text-muted-foreground">$' +
+        unitPrice +
+        " each</p>" +
+        (item.stockLimit >= 0
+          ? '<p class="text-xs text-destructive">' +
+            item.stockLimit +
+            " available</p>"
+          : "") +
+        "</div>" +
+        '<div class="flex items-center gap-1">' +
+        '<button data-cart-qty="' +
+        escapeAttr(item.productId) +
+        '" data-qty="' +
+        (item.quantity - 1) +
+        '" class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer">−</button>' +
+        '<span class="w-8 text-center text-sm">' +
+        item.quantity +
+        "</span>" +
+        '<button data-cart-qty="' +
+        escapeAttr(item.productId) +
+        '" data-qty="' +
+        (item.quantity + 1) +
+        '"' +
+        (item.stockLimit >= 0 && item.quantity >= item.stockLimit
+          ? " disabled"
+          : "") +
+        ' class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">+</button>' +
+        "</div>" +
+        '<div class="text-right min-w-[60px]">' +
+        '<p class="text-sm font-bold">$' +
+        subtotal +
+        "</p>" +
+        '<button data-cart-remove="' +
+        escapeAttr(item.productId) +
+        '" class="text-xs text-destructive hover:underline mt-1 cursor-pointer">Remove</button>' +
+        "</div>" +
+        "</div>";
+    }
   }
-  html += '</div>';
+  html += "</div>";
 
   container.innerHTML = html;
 
@@ -94,7 +148,10 @@ function escapeHtml(text) {
 
 // Escape a string for safe use inside a JS single-quoted string in an onclick attribute.
 function escapeAttr(s) {
-  return String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/</g, "\\x3c");
+  return String(s)
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/</g, "\\x3c");
 }
 
 function cartMutate(url, body) {
@@ -107,7 +164,9 @@ function cartMutate(url, body) {
     headers: { Accept: "application/json" },
     body: formData,
   })
-    .then(function (res) { return res.json(); })
+    .then(function (res) {
+      return res.json();
+    })
     .then(function (data) {
       renderCart(data);
       // Keep checkout page in sync when cart is modified from the drawer.
@@ -126,39 +185,50 @@ function cartUpdateQty(productId, quantity) {
   cartMutate("/cart/update", { product_id: productId, quantity: quantity });
 }
 
+function cartUpdatePrice(productId, price) {
+  cartMutate("/cart/update-price", {
+    product_id: productId,
+    custom_price: price,
+  });
+}
+
 function cartRemove(productId) {
   cartMutate("/cart/remove", { product_id: productId });
 }
 
 // Add-to-cart: intercept forms, open drawer on success
 document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll('form[action="/cart/add"]').forEach(function (form) {
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var btn = form.querySelector('button[type="submit"]');
-      var origText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = "Added!";
+  document
+    .querySelectorAll('form[action="/cart/add"]')
+    .forEach(function (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var btn = form.querySelector('button[type="submit"]');
+        var origText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Added!";
 
-      fetch("/cart/add", {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: new FormData(form),
-      })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          openCart(data);
-          setTimeout(function () {
+        fetch("/cart/add", {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(form),
+        })
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            openCart(data);
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = origText;
+            }, 1000);
+          })
+          .catch(function () {
             btn.disabled = false;
             btn.textContent = origText;
-          }, 1000);
-        })
-        .catch(function () {
-          btn.disabled = false;
-          btn.textContent = origText;
-        });
+          });
+      });
     });
-  });
 });
 
 // Close drawer on Escape key
@@ -174,37 +244,83 @@ document.addEventListener("DOMContentLoaded", function () {
   var cartClose = document.getElementById("cart-close");
   var cartDrawer = document.getElementById("cart-drawer");
 
-  if (navCart) navCart.addEventListener("click", function () { openCart(); });
-  if (navCartMobile) navCartMobile.addEventListener("click", function () { openCart(); });
-  if (cartBackdrop) cartBackdrop.addEventListener("click", function () { closeCart(); });
-  if (cartClose) cartClose.addEventListener("click", function () { closeCart(); });
+  if (navCart)
+    navCart.addEventListener("click", function () {
+      openCart();
+    });
+  if (navCartMobile)
+    navCartMobile.addEventListener("click", function () {
+      openCart();
+    });
+  if (cartBackdrop)
+    cartBackdrop.addEventListener("click", function () {
+      closeCart();
+    });
+  if (cartClose)
+    cartClose.addEventListener("click", function () {
+      closeCart();
+    });
 
-  // Cart drawer: qty/remove buttons
-  if (cartDrawer) cartDrawer.addEventListener("click", function (e) {
-    var qtyBtn = e.target.closest("[data-cart-qty]");
-    if (qtyBtn) {
-      cartUpdateQty(qtyBtn.getAttribute("data-cart-qty"), parseInt(qtyBtn.getAttribute("data-qty"), 10));
-      return;
-    }
-    var rmBtn = e.target.closest("[data-cart-remove]");
-    if (rmBtn) {
-      cartRemove(rmBtn.getAttribute("data-cart-remove"));
-    }
-  });
+  // Cart drawer: qty/remove buttons + price inputs
+  if (cartDrawer) {
+    cartDrawer.addEventListener("click", function (e) {
+      var qtyBtn = e.target.closest("[data-cart-qty]");
+      if (qtyBtn) {
+        cartUpdateQty(
+          qtyBtn.getAttribute("data-cart-qty"),
+          parseInt(qtyBtn.getAttribute("data-qty"), 10),
+        );
+        return;
+      }
+      var rmBtn = e.target.closest("[data-cart-remove]");
+      if (rmBtn) {
+        cartRemove(rmBtn.getAttribute("data-cart-remove"));
+      }
+    });
+    cartDrawer.addEventListener("change", function (e) {
+      var priceInput = e.target.closest("[data-cart-price]");
+      if (priceInput) {
+        var val = parseFloat(priceInput.value);
+        if (val >= 1) {
+          cartUpdatePrice(
+            priceInput.getAttribute("data-cart-price"),
+            priceInput.value,
+          );
+        }
+      }
+    });
+  }
 
-  // Checkout page: qty/remove buttons
+  // Checkout page: qty/remove buttons + price inputs
   var orderSummary = document.getElementById("order-summary");
-  if (orderSummary) orderSummary.addEventListener("click", function (e) {
-    var qtyBtn = e.target.closest("[data-checkout-qty]");
-    if (qtyBtn) {
-      checkoutUpdateQty(qtyBtn.getAttribute("data-checkout-qty"), parseInt(qtyBtn.getAttribute("data-qty"), 10));
-      return;
-    }
-    var rmBtn = e.target.closest("[data-checkout-remove]");
-    if (rmBtn) {
-      checkoutRemove(rmBtn.getAttribute("data-checkout-remove"));
-    }
-  });
+  if (orderSummary) {
+    orderSummary.addEventListener("click", function (e) {
+      var qtyBtn = e.target.closest("[data-checkout-qty]");
+      if (qtyBtn) {
+        checkoutUpdateQty(
+          qtyBtn.getAttribute("data-checkout-qty"),
+          parseInt(qtyBtn.getAttribute("data-qty"), 10),
+        );
+        return;
+      }
+      var rmBtn = e.target.closest("[data-checkout-remove]");
+      if (rmBtn) {
+        checkoutRemove(rmBtn.getAttribute("data-checkout-remove"));
+      }
+    });
+    orderSummary.addEventListener("change", function (e) {
+      var priceInput = e.target.closest("[data-checkout-price]");
+      if (priceInput) {
+        var val = parseFloat(priceInput.value);
+        if (val >= 1) {
+          checkoutUpdatePrice(
+            priceInput.getAttribute("data-checkout-price"),
+            priceInput.value,
+          );
+        }
+      }
+    });
+  }
 });
 
 // Checkout page cart management
@@ -244,6 +360,13 @@ function checkoutUpdateQty(productId, quantity) {
   checkoutMutate("/cart/update", { product_id: productId, quantity: quantity });
 }
 
+function checkoutUpdatePrice(productId, price) {
+  checkoutMutate("/cart/update-price", {
+    product_id: productId,
+    custom_price: price,
+  });
+}
+
 function checkoutRemove(productId) {
   checkoutMutate("/cart/remove", { product_id: productId });
 }
@@ -258,28 +381,80 @@ function renderOrderSummary(data) {
     var item = data.items[i];
     var subtotal = (item.subtotalCents / 100).toFixed(2);
     var unitPrice = (item.priceCents / 100).toFixed(2);
-    html +=
-      '<div class="flex items-center justify-between py-3 border-b border-foreground/10 text-sm">' +
+    if (item.variablePrice) {
+      html +=
+        '<div class="flex items-center justify-between py-3 border-b border-foreground/10 text-sm">' +
         '<div class="grow">' +
-          '<p class="font-serif font-bold">' + escapeHtml(item.name) + '</p>' +
-          '<p class="text-xs text-muted-foreground">$' + unitPrice + ' each</p>' +
-          (item.stockLimit >= 0 ? '<p class="text-xs text-destructive">' + item.stockLimit + ' available</p>' : '') +
-        '</div>' +
-        '<div class="flex items-center gap-1">' +
-          '<button data-checkout-qty="' + escapeAttr(item.productId) + '" data-qty="' + (item.quantity - 1) + '" class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer">\u2212</button>' +
-          '<span class="w-8 text-center text-sm">' + item.quantity + '</span>' +
-          '<button data-checkout-qty="' + escapeAttr(item.productId) + '" data-qty="' + (item.quantity + 1) + '"' + (item.stockLimit >= 0 && item.quantity >= item.stockLimit ? ' disabled' : '') + ' class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">+</button>' +
-        '</div>' +
+        '<p class="font-serif font-bold">' +
+        escapeHtml(item.name) +
+        "</p>" +
+        '<div class="flex items-center gap-1 mt-1">' +
+        '<span class="text-sm font-bold text-primary">$</span>' +
+        '<input type="number" data-checkout-price="' +
+        escapeAttr(item.productId) +
+        '" value="' +
+        unitPrice +
+        '" min="1" step="1" class="w-28 p-1.5 border border-border rounded text-sm bg-background text-foreground focus:outline-none focus:border-primary">' +
+        "</div>" +
+        "</div>" +
         '<div class="text-right min-w-[60px] ml-3">' +
-          '<p class="font-bold">$' + subtotal + '</p>' +
-          '<button data-checkout-remove="' + escapeAttr(item.productId) + '" class="text-xs text-destructive hover:underline mt-1 cursor-pointer">Remove</button>' +
-        '</div>' +
-      '</div>';
+        '<button data-checkout-remove="' +
+        escapeAttr(item.productId) +
+        '" class="text-xs text-destructive hover:underline mt-1 cursor-pointer">Remove</button>' +
+        "</div>" +
+        "</div>";
+    } else {
+      html +=
+        '<div class="flex items-center justify-between py-3 border-b border-foreground/10 text-sm">' +
+        '<div class="grow">' +
+        '<p class="font-serif font-bold">' +
+        escapeHtml(item.name) +
+        "</p>" +
+        '<p class="text-xs text-muted-foreground">$' +
+        unitPrice +
+        " each</p>" +
+        (item.stockLimit >= 0
+          ? '<p class="text-xs text-destructive">' +
+            item.stockLimit +
+            " available</p>"
+          : "") +
+        "</div>" +
+        '<div class="flex items-center gap-1">' +
+        '<button data-checkout-qty="' +
+        escapeAttr(item.productId) +
+        '" data-qty="' +
+        (item.quantity - 1) +
+        '" class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer">\u2212</button>' +
+        '<span class="w-8 text-center text-sm">' +
+        item.quantity +
+        "</span>" +
+        '<button data-checkout-qty="' +
+        escapeAttr(item.productId) +
+        '" data-qty="' +
+        (item.quantity + 1) +
+        '"' +
+        (item.stockLimit >= 0 && item.quantity >= item.stockLimit
+          ? " disabled"
+          : "") +
+        ' class="w-7 h-7 flex items-center justify-center border border-border rounded text-sm hover:border-primary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">+</button>' +
+        "</div>" +
+        '<div class="text-right min-w-[60px] ml-3">' +
+        '<p class="font-bold">$' +
+        subtotal +
+        "</p>" +
+        '<button data-checkout-remove="' +
+        escapeAttr(item.productId) +
+        '" class="text-xs text-destructive hover:underline mt-1 cursor-pointer">Remove</button>' +
+        "</div>" +
+        "</div>";
+    }
   }
   container.innerHTML = html;
 
   var summaryTotals = document.getElementById("order-summary-totals");
-  var feeCents = summaryTotals ? parseInt(summaryTotals.getAttribute("data-fee-cents"), 10) || 0 : 0;
+  var feeCents = summaryTotals
+    ? parseInt(summaryTotals.getAttribute("data-fee-cents"), 10) || 0
+    : 0;
   var subtotalDollars = (data.totalCents / 100).toFixed(2);
   var grandTotalCents = data.totalCents + feeCents;
   var grandTotalDollars = (grandTotalCents / 100).toFixed(2);
@@ -460,7 +635,10 @@ function setupFormSubmission() {
 function showError(message) {
   const errorEl = document.getElementById("card-response");
   errorEl.textContent = message;
-  errorEl.style.color = getComputedStyle(document.documentElement).getPropertyValue("--destructive-foreground").trim() || "red";
+  errorEl.style.color =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--destructive-foreground")
+      .trim() || "red";
 }
 
 function clearError() {

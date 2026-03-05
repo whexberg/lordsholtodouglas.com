@@ -3,18 +3,20 @@ package pages
 import (
 	"log"
 	"lsd3/internal/content"
+	"lsd3/internal/data_view"
+	"lsd3/templates"
 	"net/http"
 	"time"
 )
 
-type homeData struct {
-	PageData
-	SiteName       string
-	Subtitle       string
-	Sponsors       []content.Sponsor
-	FeaturedEvents []eventView
-	UpcomingEvents []eventView
-}
+// type homeData struct {
+// 	data_view.PageData
+// 	SiteName       string
+// 	Subtitle       string
+// 	Sponsors       []content.Sponsor
+// 	FeaturedEvents []data_view.EventView
+// 	UpcomingEvents []data_view.EventView
+// }
 
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
@@ -32,10 +34,10 @@ func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	allViews := expandAndSort(eligible, now, to)
+	allViews := data_view.ExpandAndSort(eligible, now, to)
 
-	var featured []eventView
-	var upcoming []eventView
+	var featured []data_view.EventView
+	var upcoming []data_view.EventView
 	for _, v := range allViews {
 		if v.Featured {
 			featured = append(featured, v)
@@ -44,15 +46,18 @@ func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := homeData{
-		PageData:       pageDataFromRequest(r),
-		SiteName:       content.SiteConfig.Name,
-		Subtitle:       content.SiteConfig.Subtitle,
+	pageData := data_view.PageDataFromRequest(r)
+	pageData.Title = "Lord Sholto Douglas #3 — E Clampus Vitus"
+	pageData.SiteName = content.SiteConfig.Name
+	pageData.Subtitle = content.SiteConfig.Subtitle
+	data := data_view.HomeData{
+		PageData:       pageData,
 		Sponsors:       content.Sponsors,
 		FeaturedEvents: featured,
 		UpcomingEvents: upcoming,
 	}
-	if err := h.renderer.Render(w, "home.html", data); err != nil {
+
+	if err := templates.HomePage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render home: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}

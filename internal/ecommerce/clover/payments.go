@@ -22,9 +22,9 @@ type ChargeResponse struct {
 
 // PayOrderRequest represents a request to pay for an existing order.
 type PayOrderRequest struct {
-	Source       string `json:"source"`                  // payment token from iframe
-	Ecomind      string `json:"ecomind"`                 // "ecom" for ecommerce transactions
-	ReceiptEmail string `json:"receipt_email,omitempty"` // email for Clover receipt (production only)
+	Source  string `json:"source"`          // payment token from iframe
+	Ecomind string `json:"ecomind"`         // "ecom" for ecommerce transactions
+	Email   string `json:"email,omitempty"` // email for Clover receipt
 }
 
 // PayForOrder pays for an existing order, linking payment to line items.
@@ -40,9 +40,9 @@ func (c *CloverClient) PayForOrder(orderID string, source string, receiptEmail s
 	}
 
 	reqBody := PayOrderRequest{
-		Source:       source,
-		Ecomind:      "ecom",
-		ReceiptEmail: receiptEmail,
+		Source:  source,
+		Ecomind: "ecom",
+		Email:   receiptEmail,
 	}
 
 	url := fmt.Sprintf("%s/v1/orders/%s/pay", c.EcommerceURL, orderID)
@@ -73,7 +73,7 @@ func (c *CloverClient) PayForOrder(orderID string, source string, receiptEmail s
 	}
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("clover API error: status %d", resp.StatusCode)
+		return nil, fmt.Errorf("clover API error: status %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	var chargeResp ChargeResponse

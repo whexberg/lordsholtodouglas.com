@@ -22,12 +22,12 @@ schedules:
 fmContentType: Event
 ---
 
-<!-- <div class="flex justify-center my-8">
-    <a href="https://link.clover.com/urlshortener/K5Qw3X"
+<div class="flex justify-center my-8">
+    <a href="/shop"
         class="inline-block px-8 py-4 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-primary-foreground hover:text-primary hover:border-primary transition-all duration-300 shadow-lg hover:shadow-xl">
         Acquire Thy Tickets Hence
     </a>
-</div> -->
+</div>
 
 Hear ye, hear ye! By the hallowed traditions of the Ancient and Honorable Order, we proclaim the grand convocation of the **Annual Bean Feed and Hawkers Fair!** As is our most peculiar custom, we gather once more to partake in sustenance and the joyous clamor of the Hawkers Fair. Credo Quia Absurdum!
 

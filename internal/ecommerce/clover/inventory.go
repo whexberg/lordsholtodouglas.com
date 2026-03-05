@@ -80,9 +80,10 @@ func (c *CloverClient) LookupItem(itemID string) (*cart.ItemInfo, error) {
 		stock = item.StockCount()
 	}
 	return &cart.ItemInfo{
-		Name:       item.Name,
-		PriceCents: item.Price,
-		StockCount: stock,
+		Name:          item.Name,
+		PriceCents:    item.Price,
+		StockCount:    stock,
+		VariablePrice: item.PriceType == "VARIABLE",
 	}, nil
 }
 

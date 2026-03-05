@@ -4,28 +4,35 @@ import "lsd3/internal/ecommerce/clover"
 
 // Product represents a storefront product mapped from Clover Item
 type Product struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"` // in dollars for display
-	PriceCents  int64   `json:"price_cents"`
-	SKU         string  `json:"sku,omitempty"`
-	Available   bool    `json:"available"`
-	TrackStock  bool    `json:"track_stock"`
-	StockCount  int     `json:"stock_count"`
-	Description string  `json:"description,omitempty"`
+	ID            string  `json:"id"`
+	Name          string  `json:"name"`
+	Price         float64 `json:"price"` // in dollars for display
+	PriceCents    int64   `json:"price_cents"`
+	SKU           string  `json:"sku,omitempty"`
+	Available     bool    `json:"available"`
+	TrackStock    bool    `json:"track_stock"`
+	StockCount    int     `json:"stock_count"`
+	Description   string  `json:"description,omitempty"`
+	VariablePrice bool    `json:"variable_price"`
+}
+
+// IsVariablePrice returns true if this product has user-set pricing.
+func (p Product) IsVariablePrice() bool {
+	return p.VariablePrice
 }
 
 // ProductFromCloverItem converts a Clover Item to a Product
 func ProductFromCloverItem(item clover.Item) Product {
 	return Product{
-		ID:         item.ID,
-		Name:       item.Name,
-		Price:      float64(item.Price) / 100.0,
-		PriceCents: item.Price,
-		SKU:        item.SKU,
-		Available:  item.Available && !item.Hidden,
-		TrackStock: item.AutoManageStock,
-		StockCount: item.StockCount(),
+		ID:            item.ID,
+		Name:          item.Name,
+		Price:         float64(item.Price) / 100.0,
+		PriceCents:    item.Price,
+		SKU:           item.SKU,
+		Available:     item.Available && !item.Hidden,
+		TrackStock:    item.AutoManageStock,
+		StockCount:    item.StockCount(),
+		VariablePrice: item.PriceType == "VARIABLE",
 	}
 }
 
