@@ -11,9 +11,12 @@ RUN go mod download
 RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.8/tailwindcss-linux-x64-musl \
     && chmod +x tailwindcss-linux-x64-musl
 
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
 COPY . .
 
-# Build CSS
+# Generate templ templates and build CSS
+RUN templ generate
 RUN ./tailwindcss-linux-x64-musl -i static/input.css -o static/style.css --minify
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server ./cmd/server
