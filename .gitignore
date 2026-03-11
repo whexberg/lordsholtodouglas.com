@@ -46,7 +46,7 @@ data/
 # Air (hot reload)
 tmp/
 # Built binary
-server
+/server
 
 # Tailwind CLI binary
 bin/
