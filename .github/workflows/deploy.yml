@@ -1,0 +1,49 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Sync files to server
+        run: |
+          rsync -avz --delete \
+            --include='cmd/' --include='cmd/**' \
+            --include='content/' --include='content/**' \
+            --include='deploy/' --include='deploy/**' \
+            --include='internal/' --include='internal/**' \
+            --include='static/' --include='static/**' \
+            --include='templates/' --include='templates/**' \
+            --include='go.mod' \
+            --include='go.sum' \
+            --include='Taskfile.yml' \
+            --exclude='*' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_DIR }}/
+
+      - name: Build and restart containers
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd ${{ secrets.REMOTE_DIR }}/deploy && docker compose -f docker-compose.prod.yml up --build -d"
+
+      - name: Health check
+        run: |
+          sleep 10
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "curl -sf http://localhost:8080/health > /dev/null 2>&1" \
+            && echo "Deploy successful!" \
+            || echo "::warning::Health check failed - check server logs"
