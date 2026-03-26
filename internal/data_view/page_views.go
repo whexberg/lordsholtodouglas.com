@@ -9,13 +9,18 @@ import (
 
 type EventDetailData struct {
 	PageData
-	Instance *content.EventInstance
+	Event *content.Event
 }
 
 type HumbuggeryData struct {
 	PageData
-	Intro  string
-	Images []string
+	Intro   string
+	Humbugs []content.Humbug
+}
+
+type HumbugDetailData struct {
+	PageData
+	Humbug *content.Humbug
 }
 
 type HistoryReportsData struct {

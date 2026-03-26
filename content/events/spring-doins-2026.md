@@ -8,12 +8,10 @@ eventType: function
 isMembersOnly: true
 featured: false
 draft: false
-schedules:
-  - frequency: once
-    startDate: 2026-04-17
-    startTime: 12:00
-    endDate: 2026-04-19
-    endTime: 12:00
+date: 2026-04-17
+startTime: "12:00"
+endDate: 2026-04-19
+endTime: "12:00"
 fmContentType: Event
 slug: spring-doins
 ---

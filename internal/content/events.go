@@ -9,77 +9,109 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Events lists all chapter events (non-draft, sorted by next occurrence).
+// Events lists all chapter events (non-draft, sorted by date).
 var Events []Event
 
-// Schedule describes when an event occurs.
-type Schedule struct {
-	Frequency string // "once", "monthly", "yearly"
-	StartDate string // "YYYY-MM-DD"
-	StartTime string // "HH:MM"
-	EndDate   string // "YYYY-MM-DD" (for multi-day)
-	EndTime   string // "HH:MM"
-	Duration  int    // minutes
-	Weekday   string // for monthly/yearly (e.g. "friday")
-	Week      int    // which week (1-5) for monthly/yearly
-	Month     int    // for yearly (1-12)
-	Until     string // "YYYY-MM-DD" recurrence end
-}
-
-// Event represents a chapter event with schedule info.
+// Event represents a chapter event instance with a concrete date.
 type Event struct {
-	Title          string
-	Slug           string
-	Description    string
-	Location       string
-	Date           string // formatted for display (computed from schedule)
-	EndDate        string // formatted for display
-	Time           string // formatted for display
-	EventType      string
-	MembersOnly    bool
-	Draft          bool
-	Featured       bool
-	Weight         int
-	DateTBDReason  string // "TBD" when date is undetermined
-	Schedules      []Schedule
-	ContentHTML    template.HTML // markdown body rendered to HTML
+	Title       string
+	Slug        string        // URL slug (e.g., "board-meeting", "spring-doins")
+	Description string
+	Location    string
+	Date        time.Time     // parsed date+time (zero for TBD)
+	EndDate     time.Time     // parsed end date (zero if not multi-day)
+	Duration    int           // minutes
+	EventType   string
+	MembersOnly bool
+	Draft       bool
+	Featured    bool
+	Weight      int
+	DateTBD     bool          // true when date is undetermined
+	IsInstance  bool          // true for files in subdirectories (slug/date URL)
+	ContentHTML template.HTML // markdown body rendered to HTML
 }
 
-// GetEvent finds an event by slug.
-func GetEvent(slug string) *Event {
+// GetEvent finds an event by slug and optional date string.
+func GetEvent(slug string, dateStr string) *Event {
 	for i := range Events {
-		if Events[i].Slug == slug {
+		if Events[i].Slug != slug {
+			continue
+		}
+		if dateStr == "" || Events[i].Date.Format("2006-01-02") == dateStr {
 			return &Events[i]
+		}
+	}
+	// Fallback: slug-only match for non-instance events
+	if dateStr != "" {
+		for i := range Events {
+			if Events[i].Slug == slug && !Events[i].IsInstance {
+				return &Events[i]
+			}
 		}
 	}
 	return nil
 }
 
-// HasFutureOccurrence returns true if the event has a future occurrence.
-func HasFutureOccurrence(e *Event) bool {
-	now := time.Now()
-	return !eventNextOccurrence(e, now, now.Location()).IsZero()
+// IsFuture returns true if the event is in the future or has a TBD date.
+func (e *Event) IsFuture(now time.Time) bool {
+	return e.DateTBD || e.Date.After(now)
 }
 
-func isRecurring(e *Event) bool {
-	for _, s := range e.Schedules {
-		if s.Frequency == "monthly" || s.Frequency == "yearly" {
-			return true
-		}
+// URL returns the URL path for this event.
+func (e *Event) URL() string {
+	if e.IsInstance && !e.Date.IsZero() {
+		return "/events/" + e.Slug + "/" + e.Date.Format("2006-01-02")
 	}
-	return false
+	return "/events/" + e.Slug
 }
 
-func eventNextOccurrence(e *Event, now time.Time, loc *time.Location) time.Time {
-	var earliest time.Time
-	for _, s := range e.Schedules {
-		if t, ok := nextOccurrence(s, now); ok {
-			if earliest.IsZero() || t.Before(earliest) {
-				earliest = t
-			}
-		}
+// DisplayDate returns the formatted display date.
+func (e *Event) DisplayDate() string {
+	if e.DateTBD {
+		return "TBD"
 	}
-	return earliest
+	if e.Date.IsZero() {
+		return ""
+	}
+	return e.Date.Format("January 2, 2006")
+}
+
+// DisplayEndDate returns the formatted display end date.
+func (e *Event) DisplayEndDate() string {
+	if e.EndDate.IsZero() {
+		return ""
+	}
+	return e.EndDate.Format("January 2, 2006")
+}
+
+// DisplayTime returns the formatted display time.
+func (e *Event) DisplayTime() string {
+	if e.Date.IsZero() {
+		return ""
+	}
+	if e.Date.Hour() == 0 && e.Date.Minute() == 0 {
+		return ""
+	}
+	return formatTime(e.Date)
+}
+
+// DisplayEndTime returns the formatted display end time.
+func (e *Event) DisplayEndTime() string {
+	if e.Duration > 0 && !e.Date.IsZero() {
+		endT := e.Date.Add(time.Duration(e.Duration) * time.Minute)
+		return formatTime(endT)
+	}
+	if !e.EndDate.IsZero() && (e.EndDate.Hour() != 0 || e.EndDate.Minute() != 0) {
+		return formatTime(e.EndDate)
+	}
+	return ""
+}
+
+func formatTime(t time.Time) string {
+	if t.Minute() == 0 {
+		return t.Format("3 PM")
+	}
+	return t.Format("3:04 PM")
 }
 
 type eventFrontmatter struct {
@@ -92,21 +124,12 @@ type eventFrontmatter struct {
 	Draft       bool   `yaml:"draft"`
 	Featured    bool   `yaml:"featured"`
 	Weight      int    `yaml:"weight"`
-	Meta        struct {
-		DrawingDateTBD bool `yaml:"drawing_date_tbd"`
-	} `yaml:"meta"`
-	Schedules []struct {
-		Frequency string `yaml:"frequency"`
-		StartDate string `yaml:"startDate"`
-		StartTime string `yaml:"startTime"`
-		EndDate   string `yaml:"endDate"`
-		EndTime   string `yaml:"endTime"`
-		Duration  int    `yaml:"duration"`
-		Weekday   string `yaml:"weekday"`
-		Week      int    `yaml:"week"`
-		Month     int    `yaml:"month"`
-		Until     string `yaml:"until"`
-	} `yaml:"schedules"`
+	Date        string `yaml:"date"`      // "YYYY-MM-DD"
+	StartTime   string `yaml:"startTime"` // "HH:MM"
+	EndDate     string `yaml:"endDate"`   // "YYYY-MM-DD"
+	EndTime     string `yaml:"endTime"`   // "HH:MM"
+	Duration    int    `yaml:"duration"`  // minutes
+	DateTBD     bool   `yaml:"dateTBD"`   // true when date is undetermined
 }
 
 func loadEvents(dir string, now time.Time, loc *time.Location) error {
@@ -126,25 +149,39 @@ func loadEvents(dir string, now time.Time, loc *time.Location) error {
 			continue
 		}
 
+		// Derive slug: explicit slug > parent directory > filename
 		slug := ef.Slug
+		if slug == "" && f.parentDir != "" {
+			slug = f.parentDir
+		}
 		if slug == "" {
 			slug = f.name
 		}
 
-		var schedules []Schedule
-		for _, s := range ef.Schedules {
-			schedules = append(schedules, Schedule{
-				Frequency: s.Frequency,
-				StartDate: s.StartDate,
-				StartTime: s.StartTime,
-				EndDate:   s.EndDate,
-				EndTime:   s.EndTime,
-				Duration:  s.Duration,
-				Weekday:   s.Weekday,
-				Week:      s.Week,
-				Month:     s.Month,
-				Until:     s.Until,
-			})
+		// Parse date
+		var date time.Time
+		if ef.Date != "" {
+			t, err := time.ParseInLocation("2006-01-02", ef.Date, loc)
+			if err != nil {
+				return fmt.Errorf("%s: invalid date %q: %w", f.name, ef.Date, err)
+			}
+			if ef.StartTime != "" {
+				t = setTime(t, ef.StartTime)
+			}
+			date = t
+		}
+
+		// Parse end date
+		var endDate time.Time
+		if ef.EndDate != "" {
+			t, err := time.ParseInLocation("2006-01-02", ef.EndDate, loc)
+			if err != nil {
+				return fmt.Errorf("%s: invalid endDate %q: %w", f.name, ef.EndDate, err)
+			}
+			if ef.EndTime != "" {
+				t = setTime(t, ef.EndTime)
+			}
+			endDate = t
 		}
 
 		var contentHTML template.HTML
@@ -156,44 +193,48 @@ func loadEvents(dir string, now time.Time, loc *time.Location) error {
 			contentHTML = html
 		}
 
-		var dateTBDReason string
-		if ef.Meta.DrawingDateTBD {
-			dateTBDReason = "TBD"
-		}
-
 		e := Event{
-			Title:         ef.Title,
-			Slug:          slug,
-			Description:   ef.Description,
-			Location:      ef.Location,
-			EventType:     ef.EventType,
-			MembersOnly:   ef.MembersOnly,
-			Draft:         ef.Draft,
-			Featured:      ef.Featured,
-			Weight:        ef.Weight,
-			DateTBDReason: dateTBDReason,
-			Schedules:     schedules,
-			ContentHTML:   contentHTML,
+			Title:       ef.Title,
+			Slug:        slug,
+			Description: ef.Description,
+			Location:    ef.Location,
+			Date:        date,
+			EndDate:     endDate,
+			Duration:    ef.Duration,
+			EventType:   ef.EventType,
+			MembersOnly: ef.MembersOnly,
+			Draft:       ef.Draft,
+			Featured:    ef.Featured,
+			Weight:      ef.Weight,
+			DateTBD:     ef.DateTBD,
+			IsInstance:  f.parentDir != "",
+			ContentHTML: contentHTML,
 		}
 
-		formatEventDates(&e, now)
 		Events = append(Events, e)
 	}
 
 	sort.SliceStable(Events, func(i, j int) bool {
-		iNext := eventNextOccurrence(&Events[i], now, loc)
-		jNext := eventNextOccurrence(&Events[j], now, loc)
-		if iNext.IsZero() && jNext.IsZero() {
+		iDate := Events[i].Date
+		jDate := Events[j].Date
+		// Zero dates (TBD) sort last
+		if iDate.IsZero() && jDate.IsZero() {
 			return false
 		}
-		if iNext.IsZero() {
+		if iDate.IsZero() {
 			return false
 		}
-		if jNext.IsZero() {
+		if jDate.IsZero() {
 			return true
 		}
-		return iNext.Before(jNext)
+		return iDate.Before(jDate)
 	})
 
 	return nil
+}
+
+func setTime(t time.Time, timeStr string) time.Time {
+	var h, m int
+	fmt.Sscanf(timeStr, "%d:%d", &h, &m)
+	return time.Date(t.Year(), t.Month(), t.Day(), h, m, 0, 0, t.Location())
 }

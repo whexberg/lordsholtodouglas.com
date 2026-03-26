@@ -60,7 +60,19 @@ func loadHistoryReports(dir string) error {
 
 		displayDate := rf.Date
 		if t, err := time.Parse("2006-01-02", rf.Date); err == nil {
-			displayDate = t.Format("Jan 2, 2006")
+			day := t.Day()
+			suffix := "th"
+			switch day {
+			case 1, 21, 31:
+				suffix = "st"
+			case 2, 22:
+				suffix = "nd"
+			case 3, 23:
+				suffix = "rd"
+			}
+			clampYear := t.Year() + 4005
+			displayDate = fmt.Sprintf("%s %d%s, %d, Clamp Year %d",
+				t.Format("January"), day, suffix, t.Year(), clampYear)
 		}
 
 		HistoryReports = append(HistoryReports, HistoryReport{

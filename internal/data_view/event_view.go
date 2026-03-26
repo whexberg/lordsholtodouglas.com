@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// EventView is a template-friendly projection of an Event occurrence with a URL.
+// EventView is a template-friendly projection of an Event with a URL.
 type EventView struct {
 	Title       string
 	Slug        string
@@ -28,29 +28,31 @@ type MonthGroup struct {
 	Events []EventView
 }
 
-func occurrenceToView(occ content.EventOccurrence) EventView {
+func eventToView(e *content.Event) EventView {
 	return EventView{
-		Title:       occ.Event.Title,
-		Slug:        occ.Event.Slug,
-		Description: occ.Event.Description,
-		Location:    occ.Event.Location,
-		Date:        content.OccurrenceDisplayDate(occ),
-		Time:        content.OccurrenceDisplayTime(occ),
-		EventType:   occ.Event.EventType,
-		MembersOnly: occ.Event.MembersOnly,
-		Featured:    occ.Event.Featured,
-		DateTBD:     occ.Event.DateTBDReason != "",
-		URL:         content.OccurrenceURL(occ),
-		SortDate:    occ.Date,
+		Title:       e.Title,
+		Slug:        e.Slug,
+		Description: e.Description,
+		Location:    e.Location,
+		Date:        e.DisplayDate(),
+		Time:        e.DisplayTime(),
+		EventType:   e.EventType,
+		MembersOnly: e.MembersOnly,
+		Featured:    e.Featured,
+		DateTBD:     e.DateTBD,
+		URL:         e.URL(),
+		SortDate:    e.Date,
 	}
 }
 
-// expandAndSort returns sorted event views from occurrences within [from, to).
+// ExpandAndSort returns sorted event views for events within [from, to).
 func ExpandAndSort(events []content.Event, from, to time.Time) []EventView {
-	occs := content.ExpandOccurrences(events, from, to)
-	views := make([]EventView, len(occs))
-	for i, occ := range occs {
-		views[i] = occurrenceToView(occ)
+	var views []EventView
+	for i := range events {
+		e := &events[i]
+		if e.DateTBD || e.Featured || (!e.Date.Before(from) && e.Date.Before(to)) {
+			views = append(views, eventToView(e))
+		}
 	}
 	sort.SliceStable(views, func(i, j int) bool {
 		// TBD dates sort last
@@ -65,7 +67,7 @@ func ExpandAndSort(events []content.Event, from, to time.Time) []EventView {
 	return views
 }
 
-// groupByMonth groups event views into monthly groups.
+// GroupByMonth groups event views into monthly groups.
 func GroupByMonth(views []EventView) []MonthGroup {
 	var groups []MonthGroup
 	var current *MonthGroup

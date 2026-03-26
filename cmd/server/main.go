@@ -91,10 +91,12 @@ func main() {
 	// Content pages
 	r.Get("/", pageHandler.Home)
 	r.Get("/board-members", pageHandler.BoardMembers)
+	r.Get("/board-members/{slug}", pageHandler.BoardMember)
 	r.Get("/events", pageHandler.Events)
 	r.Get("/events/{slug}", pageHandler.Event)
 	r.Get("/events/{slug}/{date}", pageHandler.Event)
 	r.Get("/humbuggery", pageHandler.Humbuggery)
+	r.Get("/humbuggery/{slug}", pageHandler.Humbug)
 	r.Get("/history-reports", pageHandler.HistoryReports)
 	r.Get("/history-reports/{slug}", pageHandler.HistoryReport)
 

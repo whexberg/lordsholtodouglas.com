@@ -5,8 +5,29 @@ import "lsd3/internal/data_view"
 templ HistoryReportPage(d data_view.HistoryReportData) {
 	@Base(data_view.PageData{Title: d.Report.Title}) {
 		<article class="max-w-4xl mx-auto px-4 py-18 md:px-16">
-			<header class="flex flex-col mb-8 gap-2 text-center">
-				<h1 class="font-serif text-4xl font-bold tracking-wide drop-shadow-lg md:text-6xl">{ d.Report.Title }</h1>
+			<header class="flex flex-col mb-12 gap-6 text-center uppercase font-serif">
+				<div class="flex flex-col tracking-widest gap-1">
+					<p class="text-xl md:text-2xl font-bold drop-shadow">
+						HISTORY REPORT FOR THE GENERAL MEETING OF
+					</p>
+					<p class="text-2xl md:text-3xl font-bold drop-shadow">
+						LORD SHOLTO DOUGLAS CHAPTER NO.3
+					</p>
+					<p class="tracking-wide text-sm md:text-base mt-2">
+						of the Wood&apos;s Dry Diggins
+					</p>
+					<p class="text-lg md:text-xl font-bold drop-shadow">
+						E CLAMPUS VITUS
+					</p>
+				</div>
+				<div class="tracking-widest flex flex-col gap-1 text-sm md:text-base">
+					<p>AS READ BY</p>
+					<p class="font-bold text-base md:text-lg">{ d.Report.Author }</p>
+					<p>{ d.Report.Date }</p>
+				</div>
+				<h1 class="text-4xl md:text-6xl font-bold tracking-wide drop-shadow-lg text-primary">
+					{ d.Report.Title }
+				</h1>
 			</header>
 			<div class="content flex flex-col gap-2">
 				@templ.Raw(string(d.Report.ContentHTML))

@@ -15,11 +15,11 @@ func (h *PageHandler) Events(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	to := now.AddDate(1, 0, 0) // look 1 year ahead
 
-	// Filter to non-draft events with future occurrences or featured
+	// Filter to events with future dates or featured
 	var eligible []content.Event
 	for i := range content.Events {
 		e := &content.Events[i]
-		if e.Featured || content.HasFutureOccurrence(e) {
+		if e.Featured || e.IsFuture(now) {
 			eligible = append(eligible, *e)
 		}
 	}
@@ -51,18 +51,17 @@ func (h *PageHandler) Events(w http.ResponseWriter, r *http.Request) {
 
 func (h *PageHandler) Event(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
-	event := content.GetEvent(slug)
+	dateStr := chi.URLParam(r, "date")
+
+	event := content.GetEvent(slug, dateStr)
 	if event == nil {
 		h.NotFound(w, r)
 		return
 	}
 
-	dateStr := chi.URLParam(r, "date")
-	instance := content.ResolveInstance(event, dateStr)
-
 	data := data_view.EventDetailData{
 		PageData: data_view.PageDataFromRequest(r),
-		Instance: instance,
+		Event:    event,
 	}
 	if err := templates.EventPage(data).Render(r.Context(), w); err != nil {
 		log.Printf("render event: %v", err)

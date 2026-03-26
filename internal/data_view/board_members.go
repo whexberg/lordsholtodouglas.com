@@ -9,3 +9,8 @@ type BoardMemberPageData struct {
 	Subtitle string
 	Members  []content.BoardMember
 }
+
+type BoardMemberDetailData struct {
+	PageData
+	Member *content.BoardMember
+}

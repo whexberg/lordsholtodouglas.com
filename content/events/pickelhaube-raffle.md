@@ -13,19 +13,13 @@ images:
 isAllDay: false
 timezone: America/Los_Angeles
 price: $20 per ticket
-meta:
-  drawing_date_tbd: true
+dateTBD: true
 tags:
   - raffle
   - cool shit
 categories:
   - event
   - raffle
-schedules:
-  - frequency: once
-    startDate: 2025-09-19
-    startTime: 20:03
-    duration: 60
 fmContentType: Event
 ---
 

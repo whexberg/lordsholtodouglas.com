@@ -1,0 +1,170 @@
+{
+  "$schema": "https://frontmatter.codes/frontmatter.schema.json",
+  "frontMatter.taxonomy.contentTypes": [
+    {
+      "name": "default",
+      "pageBundle": false,
+      "previewPath": null,
+      "fields": [
+        {
+          "title": "Title",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Description",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "title": "Publishing date",
+          "name": "date",
+          "type": "datetime",
+          "default": "{{now}}",
+          "isPublishDate": true
+        },
+        {
+          "title": "Content preview",
+          "name": "preview",
+          "type": "image"
+        },
+        {
+          "title": "Is in draft",
+          "name": "draft",
+          "type": "draft"
+        },
+        {
+          "title": "Tags",
+          "name": "tags",
+          "type": "tags"
+        },
+        {
+          "title": "Categories",
+          "name": "categories",
+          "type": "categories"
+        }
+      ]
+    },
+    {
+      "name": "event",
+      "pageBundle": false,
+      "fields": [
+        {
+          "title": "Title",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Description",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "title": "Location",
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "title": "Event Type",
+          "name": "eventType",
+          "type": "choice",
+          "choices": ["function", "meeting"]
+        },
+        {
+          "title": "Members Only",
+          "name": "isMembersOnly",
+          "type": "boolean"
+        },
+        {
+          "title": "Featured",
+          "name": "featured",
+          "type": "boolean"
+        },
+        {
+          "title": "Date",
+          "name": "date",
+          "type": "datetime",
+          "isPublishDate": true
+        },
+        {
+          "title": "Start Time",
+          "name": "startTime",
+          "type": "string"
+        },
+        {
+          "title": "End Date",
+          "name": "endDate",
+          "type": "datetime"
+        },
+        {
+          "title": "End Time",
+          "name": "endTime",
+          "type": "string"
+        },
+        {
+          "title": "Duration (minutes)",
+          "name": "duration",
+          "type": "number"
+        },
+        {
+          "title": "Timezone",
+          "name": "timezone",
+          "type": "string",
+          "default": "America/Los_Angeles"
+        },
+        {
+          "title": "Slug",
+          "name": "slug",
+          "type": "slug"
+        },
+        {
+          "title": "Is in draft",
+          "name": "draft",
+          "type": "draft"
+        }
+      ]
+    },
+    {
+      "name": "humbuggery",
+      "pageBundle": false,
+      "fields": [
+        {
+          "title": "Name",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "title": "Image",
+          "name": "image",
+          "type": "image"
+        },
+        {
+          "title": "Weight",
+          "name": "weight",
+          "type": "number"
+        },
+        {
+          "title": "Years",
+          "name": "years",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "frontMatter.content.pageFolders": [
+    {
+      "title": "content",
+      "path": "[[workspace]]/content"
+    },
+    {
+      "title": "events",
+      "path": "[[workspace]]/content/events",
+      "contentTypes": ["event"]
+    },
+    {
+      "title": "humbuggery",
+      "path": "[[workspace]]/content/humbuggery",
+      "contentTypes": ["humbuggery"]
+    }
+  ]
+}

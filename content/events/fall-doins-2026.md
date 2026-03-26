@@ -8,12 +8,10 @@ eventType: function
 isMembersOnly: true
 featured: false
 draft: false
-schedules:
-  - frequency: once
-    startDate: 2026-09-18
-    startTime: 12:00
-    endDate: 2026-09-20
-    endTime: 12:00
+date: 2026-09-18
+startTime: "12:00"
+endDate: 2026-09-20
+endTime: "12:00"
 fmContentType: Event
 slug: fall-doins
 ---

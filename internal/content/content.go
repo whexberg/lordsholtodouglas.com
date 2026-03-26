@@ -16,6 +16,7 @@ import (
 
 type FileContent struct {
 	name        string // filename without extension
+	parentDir   string // subdirectory name, empty for top-level files
 	frontMatter []byte
 	body        []byte
 }
@@ -94,7 +95,31 @@ func loadDir(dir ...string) ([]FileContent, error) {
 
 	files := make([]FileContent, 0)
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") || entry.Name() == "_index.md" {
+		if entry.IsDir() {
+			// Recurse one level into subdirectories
+			subEntries, err := os.ReadDir(filepath.Join(dirpath, entry.Name()))
+			if err != nil {
+				return nil, err
+			}
+			for _, sub := range subEntries {
+				if sub.IsDir() || !strings.HasSuffix(sub.Name(), ".md") || sub.Name() == "_index.md" {
+					continue
+				}
+				fm, body, err := loadFile(filepath.Join(dirpath, entry.Name()), sub.Name())
+				if err != nil {
+					return nil, err
+				}
+				files = append(files, FileContent{
+					name:        strings.TrimSuffix(sub.Name(), ".md"),
+					parentDir:   entry.Name(),
+					frontMatter: fm,
+					body:        body,
+				})
+			}
+			continue
+		}
+
+		if !strings.HasSuffix(entry.Name(), ".md") || entry.Name() == "_index.md" {
 			continue
 		}
 

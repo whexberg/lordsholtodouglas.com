@@ -29,7 +29,7 @@ func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 		if e.EventType == "meeting" {
 			continue
 		}
-		if e.Featured || content.HasFutureOccurrence(e) {
+		if e.Featured || e.IsFuture(now) {
 			eligible = append(eligible, *e)
 		}
 	}
