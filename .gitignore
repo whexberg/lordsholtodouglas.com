@@ -55,6 +55,6 @@ bin/
 static/style.css
 
 # Images (deploy separately — too large for git)
-static/images/
+# static/images/
 
 .claude/
