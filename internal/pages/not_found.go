@@ -2,7 +2,7 @@ package pages
 
 import (
 	"log"
-	"lsd3/templates"
+	"lsd3/internal/templates"
 	"net/http"
 )
 

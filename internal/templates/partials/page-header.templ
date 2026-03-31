@@ -1,0 +1,10 @@
+package partials
+
+templ PageHeader(title, subtitle string) {
+	<header class="flex flex-col mb-8 gap-2 text-center">
+		<h1 class="font-serif text-4xl font-bold tracking-wide drop-shadow-lg md:text-6xl">{ title }</h1>
+		if subtitle != "" {
+			<p class="text-md text-muted-foreground italic">{ subtitle }</p>
+		}
+	</header>
+}

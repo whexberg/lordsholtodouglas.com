@@ -4,19 +4,10 @@ import (
 	"log"
 	"lsd3/internal/content"
 	"lsd3/internal/data_view"
-	"lsd3/templates"
+	"lsd3/internal/templates"
 	"net/http"
 	"time"
 )
-
-// type homeData struct {
-// 	data_view.PageData
-// 	SiteName       string
-// 	Subtitle       string
-// 	Sponsors       []content.Sponsor
-// 	FeaturedEvents []data_view.EventView
-// 	UpcomingEvents []data_view.EventView
-// }
 
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()

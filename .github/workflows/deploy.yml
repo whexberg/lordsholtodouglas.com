@@ -20,6 +20,7 @@ jobs:
       - name: Sync files to server
         run: |
           rsync -avz --delete \
+            --exclude='*_test.go' \
             --include='cmd/' --include='cmd/**' \
             --include='content/' --include='content/**' \
             --include='deploy/' --include='deploy/**' \
@@ -28,7 +29,6 @@ jobs:
             --include='templates/' --include='templates/**' \
             --include='go.mod' \
             --include='go.sum' \
-            --include='Taskfile.yml' \
             --exclude='*' \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
             ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_DIR }}/

@@ -25,9 +25,9 @@ templ Cart() {
 				<span id="cart-total" class="font-serif font-bold text-lg"></span>
 			</div>
 			<p class="text-xs text-muted-foreground mb-4">+ $1.00 processing fee at checkout</p>
-			<a href="/checkout" class="block w-full py-3 px-8 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-background hover:text-primary transition-all duration-300 text-sm text-center">
+			@PrimaryButtonLink("/checkout") {
 				Proceed to Checkout
-			</a>
+			}
 		</div>
 	</div>
 }

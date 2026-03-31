@@ -1,0 +1,20 @@
+package templates
+
+import (
+	"lsd3/internal/data_view"
+	"lsd3/internal/templates/partials"
+)
+
+templ BoardMemberPage(d data_view.BoardMemberDetailData) {
+	@Base(data_view.PageData{Title: d.Member.Name}) {
+		@partials.DetailArticle() {
+			@partials.PageHeader(d.Member.Name, d.Member.Label)
+			<div class="flex justify-center mb-8">
+				<img src={ d.Member.Image } alt={ d.Member.Name } class=""/>
+			</div>
+			if d.Member.Bio != "" {
+				@partials.ContentBody(string(d.Member.Bio))
+			}
+		}
+	}
+}

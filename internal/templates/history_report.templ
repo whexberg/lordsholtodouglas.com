@@ -1,10 +1,13 @@
 package templates
 
-import "lsd3/internal/data_view"
+import (
+	"lsd3/internal/data_view"
+	"lsd3/internal/templates/partials"
+)
 
 templ HistoryReportPage(d data_view.HistoryReportData) {
 	@Base(data_view.PageData{Title: d.Report.Title}) {
-		<article class="max-w-4xl mx-auto px-4 py-18 md:px-16">
+		@partials.DetailArticle() {
 			<header class="flex flex-col mb-12 gap-6 text-center uppercase font-serif">
 				<div class="flex flex-col tracking-widest gap-1">
 					<p class="text-xl md:text-2xl font-bold drop-shadow">
@@ -29,9 +32,7 @@ templ HistoryReportPage(d data_view.HistoryReportData) {
 					{ d.Report.Title }
 				</h1>
 			</header>
-			<div class="content flex flex-col gap-2">
-				@templ.Raw(string(d.Report.ContentHTML))
-			</div>
-		</article>
+			@partials.ContentBody(string(d.Report.ContentHTML))
+		}
 	}
 }

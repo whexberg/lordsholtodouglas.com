@@ -54,6 +54,9 @@ bin/
 # Generated CSS (built from static/input.css)
 static/style.css
 
+# Generated templ output (built in Docker)
+*_templ.go
+
 # Images (deploy separately — too large for git)
 # static/images/
 

@@ -10,30 +10,12 @@ templ Nav(cartCount int) {
 					<span class="stamp text-xs sm:text-base">Lord Sholto Douglas #3</span>
 				</a>
 				<div class="hidden space-x-4 text-sm font-bold tracking-wide uppercase lg:flex items-center">
-					<a class="hover:text-primary group relative block py-2 tracking-widest uppercase" href="/">
-						<span>Home</span>
-						<span class="absolute bottom-1 left-0 hidden h-0.5 w-0 bg-current transition-all duration-300 ease-in-out group-hover:w-full lg:block"></span>
-					</a>
-					<a class="hover:text-primary group relative block py-2 tracking-widest uppercase" href="/board-members">
-						<span>The Board</span>
-						<span class="absolute bottom-1 left-0 hidden h-0.5 w-0 bg-current transition-all duration-300 ease-in-out group-hover:w-full lg:block"></span>
-					</a>
-					<a class="hover:text-primary group relative block py-2 tracking-widest uppercase" href="/events">
-						<span>Events</span>
-						<span class="absolute bottom-1 left-0 hidden h-0.5 w-0 bg-current transition-all duration-300 ease-in-out group-hover:w-full lg:block"></span>
-					</a>
-					<a class="hover:text-primary group relative block py-2 tracking-widest uppercase" href="/humbuggery">
-						<span>Hall of Humbuggery</span>
-						<span class="absolute bottom-1 left-0 hidden h-0.5 w-0 bg-current transition-all duration-300 ease-in-out group-hover:w-full lg:block"></span>
-					</a>
-					<a class="hover:text-primary group relative block py-2 tracking-widest uppercase" href="/history-reports">
-						<span>History Reports</span>
-						<span class="absolute bottom-1 left-0 hidden h-0.5 w-0 bg-current transition-all duration-300 ease-in-out group-hover:w-full lg:block"></span>
-					</a>
-					<a class="hover:text-primary group relative block py-2 tracking-widest uppercase" href="/shop">
-						<span>Shop</span>
-						<span class="absolute bottom-1 left-0 hidden h-0.5 w-0 bg-current transition-all duration-300 ease-in-out group-hover:w-full lg:block"></span>
-					</a>
+					@NavLink("/", "Home")
+					@NavLink("/board-members", "The Board")
+					@NavLink("/events", "Events")
+					@NavLink("/humbuggery", "Hall of Humbuggery")
+					@NavLink("/history-reports", "History Reports")
+					@NavLink("/shop", "Shop")
 					<button class="hover:text-primary group relative block py-2 tracking-widest uppercase cursor-pointer" id="nav-cart">
 						<span class="flex items-center gap-1">
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
@@ -76,12 +58,12 @@ templ Nav(cartCount int) {
 		</div>
 		<!-- Mobile Menu -->
 		<div class="hidden space-y-3 p-4 text-sm font-bold lg:hidden" id="mobile-menu">
-			<a class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase" href="/">Home</a>
-			<a class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase" href="/board-members">The Board</a>
-			<a class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase" href="/events">Events</a>
-			<a class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase" href="/humbuggery">Hall of Humbuggery</a>
-			<a class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase" href="/history-reports">History Reports</a>
-			<a class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase" href="/shop">Shop</a>
+			@MobileNavLink("/", "Home")
+			@MobileNavLink("/board-members", "The Board")
+			@MobileNavLink("/events", "Events")
+			@MobileNavLink("/humbuggery", "Hall of Humbuggery")
+			@MobileNavLink("/history-reports", "History Reports")
+			@MobileNavLink("/shop", "Shop")
 			<button class="hover:bg-primary hover:text-primary-foreground group relative block p-4 py-2 tracking-widest uppercase w-full text-left cursor-pointer" id="nav-cart-mobile">
 				Cart
 				<span id="nav-cart-mobile-count">

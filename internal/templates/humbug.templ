@@ -1,0 +1,23 @@
+package templates
+
+import (
+	"lsd3/internal/data_view"
+	"lsd3/internal/templates/partials"
+)
+
+templ HumbugPage(d data_view.HumbugDetailData) {
+	@Base(data_view.PageData{Title: d.Humbug.Name}) {
+		@partials.DetailArticle() {
+			@partials.PageHeader(d.Humbug.Name, "Noble Grand Humbug")
+			if d.Humbug.Years != "" {
+				<p class="text-sm text-muted-foreground text-center -mt-6 mb-8">{ d.Humbug.Years }</p>
+			}
+			<div class="flex justify-center mb-8 mx-8">
+				<img src={ d.Humbug.Image } alt={ d.Humbug.Name } class="aspect-square max-w-sm w-full object-cover border border-accent"/>
+			</div>
+			if d.Humbug.Bio != "" {
+				@partials.ContentBody(string(d.Humbug.Bio))
+			}
+		}
+	}
+}

@@ -1,0 +1,19 @@
+package partials
+
+templ PrimaryButton() {
+	<button type="submit" class="w-full py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-background hover:text-primary transition-all duration-300 text-sm">
+		{ children... }
+	</button>
+}
+
+templ PrimaryButtonLink(href string) {
+	<a href={ templ.SafeURL(href) } class="inline-block px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest border-2 border-primary hover:bg-background hover:text-primary transition-all duration-300 text-sm text-center">
+		{ children... }
+	</a>
+}
+
+templ DisabledButton() {
+	<button class="w-full py-3 bg-muted text-muted-foreground font-display uppercase tracking-widest text-sm cursor-not-allowed" disabled>
+		{ children... }
+	</button>
+}

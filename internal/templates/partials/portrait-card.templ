@@ -1,0 +1,17 @@
+package partials
+
+templ PortraitCard(href, image, name, bgClass string) {
+	<a href={ templ.SafeURL(href) } class={ "flex h-full w-full flex-col border p-4 hover:shadow-lg transition-shadow", borderClass(bgClass) }>
+		<img src={ image } alt={ name } class="aspect-square w-full object-cover"/>
+		<div class={ "flex grow flex-col justify-center p-4 text-center", bgClass }>
+			{ children... }
+		</div>
+	</a>
+}
+
+func borderClass(bgClass string) string {
+	if bgClass == "bg-accent text-white" {
+		return "border-accent"
+	}
+	return "border-primary"
+}

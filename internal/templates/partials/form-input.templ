@@ -1,0 +1,12 @@
+package partials
+
+templ FormInput(id, label, inputType, name string, required bool) {
+	<div>
+		<label for={ id } class="block text-sm font-medium mb-1.5">{ label }</label>
+		if required {
+			<input type={ inputType } id={ id } name={ name } required class="w-full p-3 border border-border rounded-md text-base bg-background text-foreground transition-[border-color,box-shadow] focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary/10"/>
+		} else {
+			<input type={ inputType } id={ id } name={ name } class="w-full p-3 border border-border rounded-md text-base bg-background text-foreground transition-[border-color,box-shadow] focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary/10"/>
+		}
+	</div>
+}
