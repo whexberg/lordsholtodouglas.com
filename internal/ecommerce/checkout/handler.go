@@ -8,7 +8,7 @@ import (
 	"lsd3/internal/ecommerce/cart"
 	"lsd3/internal/ecommerce/clover"
 	"lsd3/internal/middleware"
-	"lsd3/templates"
+	"lsd3/internal/templates"
 	"net/http"
 	"strings"
 )

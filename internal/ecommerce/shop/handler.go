@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"lsd3/internal/data_view"
-	"lsd3/templates"
+	"lsd3/internal/templates"
 
 	"github.com/go-chi/chi/v5"
 )

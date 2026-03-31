@@ -1,0 +1,13 @@
+package partials
+
+templ DetailArticle() {
+	<article class="max-w-4xl mx-auto px-4 py-18 md:px-16">
+		{ children... }
+	</article>
+}
+
+templ ContentBody(html string) {
+	<div class="content flex flex-col gap-2">
+		@templ.Raw(html)
+	</div>
+}

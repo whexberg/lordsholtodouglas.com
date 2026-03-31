@@ -1,0 +1,15 @@
+package templates
+
+import (
+	"lsd3/internal/data_view"
+	"lsd3/internal/templates/partials"
+)
+
+templ StaticPage(d data_view.StaticPageData) {
+	@Base(data_view.PageData{Title: d.Title}) {
+		@partials.DetailArticle() {
+			@partials.PageHeader(d.Title, d.Description)
+			@partials.ContentBody(string(d.ContentHTML))
+		}
+	}
+}

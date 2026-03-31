@@ -2,16 +2,14 @@ package templates
 
 import (
 	"lsd3/internal/data_view"
-	"lsd3/templates/partials"
+	"lsd3/internal/templates/partials"
 )
 
 templ EventsPage(d data_view.EventsPageData) {
 	@Base(data_view.PageData{Title: d.Title}) {
 		<section class="w-full px-4 py-12 md:px-16">
 			<div class="mx-auto max-w-4xl space-y-6">
-				<h1 class="font-serif text-4xl md:text-5xl font-bold tracking-wide uppercase text-center mb-10 border-b-2 border-foreground/10 pb-4">
-					Events
-				</h1>
+				@partials.SectionTitle("Events")
 				if d.Featured != nil {
 					<div class="space-y-6 pb-12">
 						<h2 class="font-serif text-xl md:text-2xl font-bold tracking-wide uppercase border-b-2 border-foreground/10 inline-block pb-2">Featured</h2>

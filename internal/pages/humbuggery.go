@@ -4,7 +4,7 @@ import (
 	"log"
 	"lsd3/internal/content"
 	"lsd3/internal/data_view"
-	"lsd3/templates"
+	"lsd3/internal/templates"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

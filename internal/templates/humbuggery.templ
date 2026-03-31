@@ -2,6 +2,7 @@ package templates
 
 import (
 	"lsd3/internal/data_view"
+	"lsd3/internal/templates/partials"
 	"fmt"
 )
 
@@ -20,15 +21,12 @@ templ HumbuggeryPage(d data_view.HumbuggeryData) {
 				<img alt="Grand Banquet Placemat" class="border-accent w-full border p-4" src="/images/humbuggery/Grand+Banquet+Placemat+.jpg"/>
 				<div class="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-3">
 					for _, h := range d.Humbugs {
-						<a href={ templ.SafeURL(fmt.Sprintf("/humbuggery/%s", h.Slug)) } class="border-accent flex flex-col w-full border p-4 hover:shadow-lg transition-shadow">
-							<img alt={ h.Name } class="aspect-square w-full object-cover" src={ h.Image }/>
-							<div class="bg-accent text-white flex grow flex-col justify-center p-4 text-center">
-								<div class="font-display text-lg font-bold">{ fmt.Sprintf("#%d", h.Weight) } { h.Name }</div>
-								if h.Years != "" {
-									<div class="text-sm">{ h.Years }</div>
-								}
-							</div>
-						</a>
+						@partials.PortraitCard(fmt.Sprintf("/humbuggery/%s", h.Slug), h.Image, h.Name, "bg-accent text-white") {
+							<div class="font-display text-lg font-bold">{ fmt.Sprintf("#%d", h.Weight) } { h.Name }</div>
+							if h.Years != "" {
+								<div class="text-sm">{ h.Years }</div>
+							}
+						}
 					}
 				</div>
 			</div>

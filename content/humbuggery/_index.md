@@ -30,7 +30,7 @@ images:
   - "30+Dave+Hammond.jpeg"
   - "31+Walborn+.png"
   - "32+Cowan.jpg"
-  - "33+Hexburg.jpeg"
+  - "33+Hexberg.jpeg"
   - "34+Kieth+Penny.jpg"
   - "35+Lawson.png"
   - "36+Hammond.jpg"

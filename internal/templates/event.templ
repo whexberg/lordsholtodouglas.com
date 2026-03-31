@@ -1,0 +1,57 @@
+package templates
+
+import (
+	"lsd3/internal/data_view"
+	"lsd3/internal/templates/partials"
+)
+
+templ EventPage(d data_view.EventDetailData) {
+	@Base(data_view.PageData{Title: d.Event.Title}) {
+		@partials.DetailArticle() {
+			<header class="flex flex-col mb-8 gap-2 text-center">
+				<h1 class="font-serif text-4xl font-bold tracking-wide drop-shadow-lg md:text-6xl">{ d.Event.Title }</h1>
+				if d.Event.Description != "" {
+					<p class="text-md text-muted-foreground italic">{ d.Event.Description }</p>
+				}
+				<div class="flex flex-wrap justify-center gap-4 mt-4 text-sm">
+					if d.Event.DisplayDate() != "" {
+						@partials.InfoBadge() {
+							@partials.CalendarIcon()
+							<span>
+								{ d.Event.DisplayDate() }
+								if d.Event.DisplayEndDate() != "" {
+									{ " - " + d.Event.DisplayEndDate() }
+								}
+							</span>
+						}
+					}
+					if d.Event.DisplayTime() != "" {
+						@partials.InfoBadge() {
+							@partials.ClockIcon()
+							<span>
+								{ d.Event.DisplayTime() }
+								if d.Event.DisplayEndTime() != "" {
+									{ " - " + d.Event.DisplayEndTime() }
+								}
+							</span>
+						}
+					}
+					if d.Event.Location != "" {
+						@partials.InfoBadge() {
+							@partials.LocationIcon()
+							<span>{ d.Event.Location }</span>
+						}
+					}
+				</div>
+				if d.Event.MembersOnly {
+					<div class="mt-3">
+						<span class="inline-block font-display text-xs uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1">Members Only</span>
+					</div>
+				}
+			</header>
+			if d.Event.ContentHTML != "" {
+				@partials.ContentBody(string(d.Event.ContentHTML))
+			}
+		}
+	}
+}
