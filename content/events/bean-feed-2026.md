@@ -40,9 +40,9 @@ No mere hovel shall contain our revelry, but the venerable **Fairgrounds** itsel
 - **Red Shirts (Honored Attendants):** A modest contribution of **$35 for the foresighted (prepay)**, or **$45 for those who arrive with impromptu zeal (at the door)**.
 - **Cook Crews (Bearers of the Culinary Arts):** A pittance of **$33** per crew (comprised of three stout souls).
 
-### For the Hawkers and Benefactors of the Raffle
+### For the Hawkers
 
-Our tradition demands generous hearts! Contribute to the noble cause with an **Equal Value Raffle Donation:**
+Our tradition demands generous hearts! Contribute to the noble cause with an **Equal Value Donation:**
 
 - **$35 Hawker**
 - **$25 (1) Ass Hawker**

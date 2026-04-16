@@ -106,6 +106,10 @@ body {
     list-style: revert;
 }
 
+.content a {
+    @apply text-primary underline;
+}
+
 .stamp {
     font-family: var(--font-default), serif;
     text-transform: uppercase;
