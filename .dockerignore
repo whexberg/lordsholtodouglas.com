@@ -21,7 +21,9 @@ server
 *.test
 
 # Documentation
-*.md
+README.md
+CONTRIBUTING.md
+CHANGELOG.md
 LICENSE
 
 # Docker files (avoid recursive copy)

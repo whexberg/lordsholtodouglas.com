@@ -31,7 +31,6 @@ RUN adduser -D -g '' appuser
 COPY --from=builder /app/server .
 COPY --from=builder /app/content ./content
 COPY --from=builder /app/static ./static
-COPY --from=builder /app/templates ./templates
 RUN mkdir -p data && chown appuser:appuser data
 
 USER appuser
